@@ -77,7 +77,7 @@ resource "aws_ecs_task_definition" "httpd" {
   family                   = "httpd"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
-  execution_role_arn       = "arn:aws:iam::429178552491:instance-profile/U-CS_ECSTaskExecutionRole"
+  execution_role_arn       = "arn:aws:iam::429178552491:role/U-CS_ECSTaskExecutionRole"
   memory                   = "512"
   cpu                      = "256"
   volume {
