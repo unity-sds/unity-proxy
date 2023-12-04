@@ -43,7 +43,7 @@ resource "aws_efs_file_system" "httpd_config_efs" {
 }
 
 resource "aws_efs_mount_target" "efs_mount_target" {
-  for_each          = local.subnet_ids
+  for_each          = toset(local.subnet_ids)
   file_system_id     = aws_efs_file_system.httpd_config_efs.id
   subnet_id         = each.value
   security_groups    = ["sg-051a5abe923b5a595"]
