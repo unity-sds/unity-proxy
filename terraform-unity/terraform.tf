@@ -10,13 +10,13 @@ data "aws_ssm_parameter" "subnet_list" {
   name = "/unity/account/network/subnet_list"
 }
 
-data "aws_ssm_parameter" "ecs_sg" {
-  name = "/unity/account/eks/cluster_sg"
-}
+#data "aws_ssm_parameter" "ecs_sg" {
+#  name = "/unity/account/eks/cluster_sg"
+#}
 
-data "aws_ssm_parameter" "u-cs-ecs" {
-  name = "/unity/account/ecs/execution_role_arn"
-}
+#data "aws_ssm_parameter" "u-cs-ecs" {
+#  name = "/unity/account/ecs/execution_role_arn"
+#}
 
 locals {
   subnet_map = jsondecode(data.aws_ssm_parameter.subnet_list.value)
@@ -39,11 +39,31 @@ resource "aws_efs_mount_target" "efs_mount_target" {
   security_groups    = ["sg-051a5abe923b5a595"]
 }
 
+resource "aws_iam_role" "ecs_execution_role" {
+  name               = "ecs_execution_role"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Action = "sts:AssumeRole",
+        Effect = "Allow",
+        Principal = {
+          Service = "ecs-tasks.amazonaws.com"
+        },
+      },
+    ]
+  })
+  permissions_boundary = "arn:aws:iam::604856450995:policy/mcp-tenantOperator-AMI-APIG"
+}
+resource "aws_iam_role_policy_attachment" "ecs_execution_role_policy_attach" {
+  role       = aws_iam_role.ecs_execution_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+}
 resource "aws_ecs_task_definition" "httpd" {
   family                   = "httpd"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
-  execution_role_arn       = data.aws_ssm_parameter.u-cs-ecs
+  execution_role_arn       = aws_iam_role.ecs_execution_role.arn
   memory                   = "512"
   cpu                      = "256"
   volume {
@@ -75,6 +95,41 @@ resource "aws_ecs_task_definition" "httpd" {
   }])
 }
 
+resource "aws_security_group" "ecs_sg" {
+  name        = "ecs_service_sg"
+  description = "Security group for ECS service"
+  vpc_id      = data.aws_ssm_parameter.vpc_id.value
+
+  // Inbound rules
+  // Example: Allow HTTP and HTTPS
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  // Outbound rules
+  // Example: Allow all outbound traffic
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "ecs_service_sg"
+  }
+}
+
 # Update the ECS Service to use the Load Balancer
 resource "aws_ecs_service" "httpd_service" {
   name            = "httpd-service"
@@ -91,7 +146,7 @@ resource "aws_ecs_service" "httpd_service" {
 
   network_configuration {
     subnets         = local.subnet_ids
-    security_groups = [data.aws_ssm_parameter.ecs_sg]
+    security_groups = [aws_security_group.ecs_sg.id]
     #needed so it can pull images
     assign_public_ip = true
   }
@@ -106,9 +161,9 @@ resource "aws_lb" "httpd_alb" {
   name               = "httpd-alb"
   internal           = false
   load_balancer_type = "application"
-  security_groups    = [data.aws_ssm_parameter.ecs_sg] # Replace with the actual security group ID
+  security_groups    = [aws_security_group.ecs_sg.id]
   subnets            = local.subnet_ids
-  enable_deletion_protection = false # Change to true if you want to prevent accidental deletion
+  enable_deletion_protection = false
 }
 
 # Create a Target Group for httpd
