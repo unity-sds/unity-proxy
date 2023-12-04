@@ -30,7 +30,7 @@ data "aws_ssm_parameter" "subnet_list" {
 
 locals {
   subnet_map = jsondecode(data.aws_ssm_parameter.subnet_list.value)
-  subnet_ids       = local.subnet_map["private"]
+  subnet_ids       = nonsensitive(local.subnet_map["private"])
 }
 
 
@@ -181,7 +181,7 @@ resource "aws_lb_target_group" "httpd_tg" {
   name     = "httpd-tg"
   port     = 8080
   protocol = "HTTP"
-  vpc_id   = data.aws_ssm_parameter.vpc_id
+  vpc_id   = data.aws_ssm_parameter.vpc_id.value
   target_type = "ip"
 
   health_check {
