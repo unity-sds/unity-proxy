@@ -24,9 +24,9 @@ data "aws_ssm_parameter" "subnet_list" {
 #  name = "/unity/account/eks/cluster_sg"
 #}
 
-#data "aws_ssm_parameter" "u-cs-ecs" {
-#  name = "/unity/account/ecs/execution_role_arn"
-#}
+data "aws_ssm_parameter" "u-cs-ecs" {
+  name = "/unity/account/ecs/execution_role_arn"
+}
 
 locals {
   subnet_map = jsondecode(data.aws_ssm_parameter.subnet_list.value)
@@ -73,31 +73,11 @@ resource "aws_efs_mount_target" "efs_mount_target" {
   security_groups    = [aws_security_group.efs_sg.id]
 }
 
-resource "aws_iam_role" "ecs_execution_role" {
-  name               = "ecs_execution_role"
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [
-      {
-        Action = "sts:AssumeRole",
-        Effect = "Allow",
-        Principal = {
-          Service = "ecs-tasks.amazonaws.com"
-        },
-      },
-    ]
-  })
-  permissions_boundary = "arn:aws:iam::604856450995:policy/mcp-tenantOperator-AMI-APIG"
-}
-resource "aws_iam_role_policy_attachment" "ecs_execution_role_policy_attach" {
-  role       = aws_iam_role.ecs_execution_role.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
-}
 resource "aws_ecs_task_definition" "httpd" {
   family                   = "httpd"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
-  execution_role_arn       = aws_iam_role.ecs_execution_role.arn
+  execution_role_arn       = data.aws_ssm_parameter.u-cs-ecs.value
   memory                   = "512"
   cpu                      = "256"
   volume {
