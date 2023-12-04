@@ -70,7 +70,7 @@ resource "aws_efs_mount_target" "efs_mount_target" {
   for_each          = toset(local.subnet_ids)
   file_system_id     = aws_efs_file_system.httpd_config_efs.id
   subnet_id         = each.value
-  security_groups    = [aws_security_group.efs_sg]
+  security_groups    = [aws_security_group.efs_sg.id]
 }
 
 resource "aws_iam_role" "ecs_execution_role" {
