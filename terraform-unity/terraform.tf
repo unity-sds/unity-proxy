@@ -2,6 +2,16 @@ provider "aws" {
   region = "us-west-2"
 }
 
+variable "tags" {
+  description = "AWS Tags"
+  type = map(string)
+}
+
+variable "deployment_name" {
+  description = "The deployment name"
+  type        = string
+}
+
 data "aws_ssm_parameter" "vpc_id" {
   name = "/unity/account/network/vpc_id"
 }
