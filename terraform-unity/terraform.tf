@@ -93,7 +93,7 @@ resource "aws_ecs_task_definition" "httpd" {
 
   container_definitions = jsonencode([{
     name  = "httpd"
-    image = "httpd:1.25.3" # Replace with your httpd image URL
+    image = "ghcr.io/unity-sds/unity-proxy/httpd-proxy:latest"
     portMappings = [
       {
         containerPort = 8080
