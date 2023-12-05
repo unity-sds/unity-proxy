@@ -36,10 +36,16 @@ locals {
 
 resource "aws_ecs_cluster" "httpd_cluster" {
   name = "httpd-cluster"
+  tags = {
+    Service = "U-CS"
+  }
 }
 
 resource "aws_efs_file_system" "httpd_config_efs" {
   creation_token = "httpd-config"
+  tags = {
+    Service = "U-CS"
+  }
 }
 resource "aws_security_group" "efs_sg" {
   name        = "efs-security-group"
@@ -63,7 +69,7 @@ resource "aws_security_group" "efs_sg" {
   }
 
   tags = {
-    Name = "efs-security-group"
+    Service = "U-CS"
   }
 }
 resource "aws_efs_mount_target" "efs_mount_target" {
@@ -71,6 +77,9 @@ resource "aws_efs_mount_target" "efs_mount_target" {
   file_system_id     = aws_efs_file_system.httpd_config_efs.id
   subnet_id         = each.value
   security_groups    = [aws_security_group.efs_sg.id]
+  tags = {
+    Service = "U-CS"
+  }
 }
 
 resource "aws_ecs_task_definition" "httpd" {
@@ -107,6 +116,9 @@ resource "aws_ecs_task_definition" "httpd" {
       }
     ]
   }])
+  tags = {
+    Service = "U-CS"
+  }
 }
 
 resource "aws_security_group" "ecs_sg" {
@@ -117,15 +129,8 @@ resource "aws_security_group" "ecs_sg" {
   // Inbound rules
   // Example: Allow HTTP and HTTPS
   ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    from_port   = 443
-    to_port     = 443
+    from_port   = 8080
+    to_port     = 8080
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
@@ -140,7 +145,7 @@ resource "aws_security_group" "ecs_sg" {
   }
 
   tags = {
-    Name = "ecs_service_sg"
+    Service = "U-CS"
   }
 }
 
@@ -164,7 +169,9 @@ resource "aws_ecs_service" "httpd_service" {
     #needed so it can pull images
     assign_public_ip = true
   }
-
+  tags = {
+    Service = "U-CS"
+  }
   depends_on = [
     aws_lb_listener.httpd_listener,
   ]
@@ -178,6 +185,9 @@ resource "aws_lb" "httpd_alb" {
   security_groups    = [aws_security_group.ecs_sg.id]
   subnets            = local.subnet_ids
   enable_deletion_protection = false
+  tags = {
+    Service = "U-CS"
+  }
 }
 
 # Create a Target Group for httpd
@@ -197,6 +207,9 @@ resource "aws_lb_target_group" "httpd_tg" {
     matcher             = "200"
     interval            = 30
   }
+  tags = {
+    Service = "U-CS"
+  }
 }
 
 # Create a Listener for the ALB that forwards requests to the httpd Target Group
@@ -208,5 +221,8 @@ resource "aws_lb_listener" "httpd_listener" {
   default_action {
     type             = "forward"
     target_group_arn = aws_lb_target_group.httpd_tg.arn
+  }
+  tags = {
+    Service = "U-CS"
   }
 }
