@@ -30,7 +30,7 @@ data "aws_ssm_parameter" "u-cs-ecs" {
 
 locals {
   subnet_map = jsondecode(data.aws_ssm_parameter.subnet_list.value)
-  subnet_ids       = nonsensitive(local.subnet_map["private"])
+  subnet_ids       = nonsensitive(local.subnet_map["public"])
 }
 
 
