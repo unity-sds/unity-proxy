@@ -30,7 +30,9 @@ data "aws_ssm_parameter" "u-cs-ecs" {
 
 locals {
   subnet_map = jsondecode(data.aws_ssm_parameter.subnet_list.value)
-  subnet_ids       = nonsensitive(local.subnet_map["public"])
+  subnet_ids = nonsensitive(local.subnet_map["private"])
+  public_subnet_ids = nonsensitive(local.subnet_map["public"])
+
 }
 
 
@@ -180,7 +182,7 @@ resource "aws_lb" "httpd_alb" {
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.ecs_sg.id]
-  subnets            = local.subnet_ids
+  subnets            = local.public_subnet_ids
   enable_deletion_protection = false
   tags = {
     Service = "U-CS"
