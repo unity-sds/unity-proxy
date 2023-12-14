@@ -1,0 +1,38 @@
+#!/bin/bash
+
+# Define the EFS mount point
+efs_mount_point="/etc/apache2/sites-enabled"
+
+# Check if the EFS mount point exists
+if [ ! -d "$efs_mount_point" ]; then
+    echo "EFS mount point not found: $efs_mount_point"
+    exit 1
+fi
+
+# File to be written
+file_path="$efs_mount_point/mgmt.conf"
+
+# Ensure the SERVICE_DNS_NAME environment variable is set
+if [ -z "$SERVICE_DNS_NAME" ]; then
+    echo "SERVICE_DNS_NAME environment variable is not set"
+    exit 1
+fi
+
+# VirtualHost template with placeholder for DNS_NAME
+vhost_template='<VirtualHost *:8080>
+RewriteEngine on
+ProxyPass /management/ http://<DNS_NAME>:8080/
+ProxyPassReverse /management/ http://<DNS_NAME>:8080/
+ProxyPreserveHost On
+RewriteCond %{HTTP:Upgrade} websocket [NC]
+RewriteCond %{HTTP:Connection} upgrade [NC]
+RewriteRule /management/(.*) ws://<DNS_NAME>:8080/$1 [P,L]
+</VirtualHost>'
+
+# Replace <DNS_NAME> with actual DNS name
+vhost_config="${vhost_template//<DNS_NAME>/$SERVICE_DNS_NAME}"
+
+# Write the configuration to the file
+echo "$vhost_config" > "$file_path"
+
+echo "VirtualHost configuration written to: $file_path"
