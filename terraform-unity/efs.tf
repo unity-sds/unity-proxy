@@ -1,5 +1,5 @@
 resource "aws_efs_file_system" "httpd_config_efs" {
-  creation_token = "httpd-config"
+  creation_token = "${var.deployment_name}-httpd-config"
   tags = {
     Service = "U-CS"
   }
