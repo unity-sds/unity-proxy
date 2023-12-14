@@ -30,7 +30,7 @@ RewriteRule /management/(.*) ws://<DNS_NAME>:8080/$1 [P,L]
 </VirtualHost>'
 
 # Replace <DNS_NAME> with actual DNS name
-vhost_config="${vhost_template//<DNS_NAME>/$SERVICE_DNS_NAME}"
+vhost_config="${vhost_template//<DNS_NAME>/$ELB_DNS_NAME}"
 
 # Write the configuration to the file
 echo "$vhost_config" > "$file_path"
