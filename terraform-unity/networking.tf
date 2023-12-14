@@ -1,6 +1,6 @@
 # Create an Application Load Balancer (ALB)
 resource "aws_lb" "httpd_alb" {
-  name               = "httpd-alb"
+  name               = "${var.deployment_name}-httpd-alb"
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.ecs_sg.id]
@@ -13,7 +13,7 @@ resource "aws_lb" "httpd_alb" {
 
 # Create a Target Group for httpd
 resource "aws_lb_target_group" "httpd_tg" {
-  name     = "httpd-tg"
+  name     = "${var.deployment_name}-httpd-tg"
   port     = 8080
   protocol = "HTTP"
   vpc_id   = data.aws_ssm_parameter.vpc_id.value

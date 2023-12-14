@@ -5,7 +5,7 @@ resource "aws_efs_file_system" "httpd_config_efs" {
   }
 }
 resource "aws_security_group" "efs_sg" {
-  name        = "efs-security-group"
+  name        = "${var.deployment_name}-efs-security-group"
   description = "Security group for EFS"
   vpc_id      = data.aws_ssm_parameter.vpc_id.value
 

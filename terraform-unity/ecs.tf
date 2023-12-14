@@ -1,5 +1,5 @@
 resource "aws_ecs_cluster" "httpd_cluster" {
-  name = "httpd-cluster"
+  name = "${var.deployment_name}-httpd-cluster"
   tags = {
     Service = "U-CS"
   }
@@ -51,7 +51,7 @@ resource "aws_ecs_task_definition" "httpd" {
 }
 
 resource "aws_security_group" "ecs_sg" {
-  name        = "ecs_service_sg"
+  name        = "${var.deployment_name}-ecs_service_sg"
   description = "Security group for ECS service"
   vpc_id      = data.aws_ssm_parameter.vpc_id.value
 
