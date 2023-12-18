@@ -6,4 +6,4 @@ RUN a2enmod proxy proxy_http proxy_wstunnel rewrite headers && \
 
 COPY write_site.sh /usr/local/bin/
 
-CMD ["/usr/local/bin/write_site.sh && apache2-foreground"]
+CMD ["/bin/bash", "-c", "/usr/local/bin/write_site.sh && apache2-foreground"]
