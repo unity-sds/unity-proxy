@@ -12,9 +12,9 @@ fi
 # File to be written
 file_path="$efs_mount_point/mgmt.conf"
 
-# Ensure the SERVICE_DNS_NAME environment variable is set
-if [ -z "$SERVICE_DNS_NAME" ]; then
-    echo "SERVICE_DNS_NAME environment variable is not set"
+# Ensure the ELB_DNS_NAME environment variable is set
+if [ -z "$ELB_DNS_NAME" ]; then
+    echo "ELB_DNS_NAME environment variable is not set"
     exit 1
 fi
 
