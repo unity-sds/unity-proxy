@@ -27,6 +27,8 @@ ProxyPreserveHost On
 RewriteCond %{HTTP:Upgrade} websocket [NC]
 RewriteCond %{HTTP:Connection} upgrade [NC]
 RewriteRule /management/(.*) ws://<DNS_NAME>:8080/$1 [P,L]
+
+FallbackResource /management/index.html
 </VirtualHost>'
 
 # Replace <DNS_NAME> with actual DNS name
