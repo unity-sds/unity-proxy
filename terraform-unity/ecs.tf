@@ -10,7 +10,7 @@ data "aws_iam_policy" "mcp_operator_policy" {
 }
 
 resource "aws_iam_role" "ecs_execution_role" {
-  name = "ecs_execution_role"
+  name = "${var.deployment_name}ecs_execution_role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
