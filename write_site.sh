@@ -21,12 +21,12 @@ fi
 # VirtualHost template with placeholder for DNS_NAME
 vhost_template='<VirtualHost *:8080>
 RewriteEngine on
-ProxyPass /management/ http://<DNS_NAME>:8080/
-ProxyPassReverse /management/ http://<DNS_NAME>:8080/
+ProxyPass /management/ http://<DNS_NAME>/
+ProxyPassReverse /management/ http://<DNS_NAME>/
 ProxyPreserveHost On
 RewriteCond %{HTTP:Upgrade} websocket [NC]
 RewriteCond %{HTTP:Connection} upgrade [NC]
-RewriteRule /management/(.*) ws://<DNS_NAME>:8080/$1 [P,L]
+RewriteRule /management/(.*) ws://<DNS_NAME>/$1 [P,L]
 
 FallbackResource /management/index.html
 </VirtualHost>'
