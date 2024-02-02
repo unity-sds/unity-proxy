@@ -35,3 +35,26 @@ resource "aws_efs_mount_target" "efs_mount_target" {
   subnet_id         = each.value
   security_groups    = [aws_security_group.efs_sg.id]
 }
+
+
+resource "aws_efs_access_point" "httpd_config_ap" {
+  file_system_id = aws_efs_file_system.httpd_config_efs.id
+
+  posix_user {
+    gid = 1001
+    uid = 1001
+  }
+
+  root_directory {
+    path = "/lambda"
+    creation_info {
+      owner_gid   = 1001
+      owner_uid   = 1001
+      permissions = "0755"
+    }
+  }
+
+  tags = {
+    Name = "${var.deployment_name}-httpd-config-ap"
+  }
+}

@@ -1,5 +1,5 @@
 resource "aws_lambda_function" "my_lambda" {
-  function_name = "my_lambda_function"
+  function_name = "httpdproxymanagement"
 
   # Assuming the lambda.zip file is in the same directory as your Terraform configuration
   filename      = "${path.module}/lambda.zip"
@@ -17,7 +17,7 @@ resource "aws_lambda_function" "my_lambda" {
 
   # EFS configuration
   file_system_config {
-    arn = aws_efs_file_system.httpd_config_efs.arn
+    arn = aws_efs_access_point.httpd_config_ap.arn
     local_mount_path = "/mnt/efs" # Lambda will access the EFS at this mount path
   }
 }
