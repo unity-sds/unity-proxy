@@ -137,7 +137,7 @@ resource "aws_iam_role_policy_attachment" "lambda_vpc_access_policy_attachment" 
   policy_arn = aws_iam_policy.lambda_vpc_access_policy.arn
 }
 resource "aws_iam_role_policy_attachment" "lambda_base_policy_attachment" {
-  role       = "aws_iam_role.lambda_iam_role.name"
+  role       = aws_iam_role.lambda_iam_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 resource "aws_iam_role_policy_attachment" "lambda_policy_attachment" {
