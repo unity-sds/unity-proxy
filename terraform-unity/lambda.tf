@@ -1,10 +1,9 @@
 resource "aws_lambda_function" "my_lambda" {
   function_name = "httpdproxymanagement"
 
-  # Assuming the lambda.zip file is in the same directory as your Terraform configuration
   filename      = "${path.module}/lambda.zip"
-  handler       = "lambda.lambda_handler" # Update the handler accordingly
-  runtime       = "python3.8" # Update the runtime as necessary
+  handler       = "lambda.lambda_handler"
+  runtime       = "python3.8"
 
   role          = aws_iam_role.lambda_iam_role.arn
 
