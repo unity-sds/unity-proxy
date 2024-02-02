@@ -105,7 +105,7 @@ resource "aws_iam_policy" "lambda_ecs_stop_task_policy" {
     Statement = [
       {
         Effect = "Allow",
-        Action = "ecs:StopTask",
+        Action = ["ecs:ListTasks","ecs:StopTask"],
         Resource = "*"
       }
     ]
