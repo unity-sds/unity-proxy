@@ -37,6 +37,8 @@ resource "aws_iam_role" "lambda_iam_role" {
       },
     ],
   })
+  permissions_boundary = data.aws_iam_policy.mcp_operator_policy.arn
+
 }
 
 resource "aws_iam_policy" "lambda_policy" {
@@ -58,7 +60,6 @@ resource "aws_iam_policy" "lambda_policy" {
       },
     ],
   })
-  permissions_boundary = data.aws_iam_policy.mcp_operator_policy.arn
 
 }
 
