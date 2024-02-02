@@ -96,3 +96,13 @@ resource "aws_iam_role_policy_attachment" "lambda_policy_attachment" {
   role       = aws_iam_role.lambda_iam_role.name
   policy_arn = aws_iam_policy.lambda_policy.arn
 }
+
+output "lambda_function_arn" {
+  description = "The ARN of the Lambda function"
+  value       = aws_lambda_function.my_lambda.arn
+}
+
+output "lambda_function_name" {
+  description = "The name of the Lambda function"
+  value       = aws_lambda_function.my_lambda.function_name
+}
