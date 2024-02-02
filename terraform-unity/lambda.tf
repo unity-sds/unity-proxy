@@ -20,6 +20,12 @@ resource "aws_lambda_function" "my_lambda" {
     arn = aws_efs_access_point.httpd_config_ap.arn
     local_mount_path = "/mnt/efs" # Lambda will access the EFS at this mount path
   }
+
+  vpc_config {
+    subnet_ids         = local.subnet_ids
+    security_group_ids = [aws_security_group.efs_sg.id]
+  }
+
 }
 
 resource "aws_iam_role" "lambda_iam_role" {
