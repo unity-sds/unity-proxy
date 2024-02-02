@@ -96,6 +96,23 @@ resource "aws_iam_policy" "lambda_policy" {
 
 }
 
+resource "aws_iam_policy" "lambda_ecs_stop_task_policy" {
+  name        = "lambda_ecs_stop_task_policy"
+  description = "Allows Lambda functions to stop ECS tasks"
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = "ecs:StopTask",
+        Resource = aws_ecs_task_definition.httpd.arn
+      }
+    ]
+  })
+}
+
+
 resource "aws_iam_policy" "lambda_vpc_access_policy" {
   name        = "lambda_vpc_access_policy"
   description = "Allows Lambda functions to manage ENIs for VPC access"
