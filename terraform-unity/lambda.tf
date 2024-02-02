@@ -141,6 +141,11 @@ resource "aws_iam_role_policy_attachment" "lambda_policy_attachment" {
   policy_arn = aws_iam_policy.lambda_policy.arn
 }
 
+resource "aws_iam_role_policy_attachment" "lambda_stop_task_policy_attachment" {
+  role       = aws_iam_role.lambda_iam_role.name
+  policy_arn = aws_iam_policy.lambda_ecs_stop_task_policy.arn
+}
+
 output "lambda_function_arn" {
   description = "The ARN of the Lambda function"
   value       = aws_lambda_function.my_lambda.arn
