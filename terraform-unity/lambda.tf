@@ -69,6 +69,29 @@ resource "aws_iam_policy" "lambda_policy" {
 
 }
 
+resource "aws_iam_policy" "lambda_vpc_access_policy" {
+  name        = "lambda_vpc_access_policy"
+  description = "Allows Lambda functions to manage ENIs for VPC access"
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = [
+          "ec2:CreateNetworkInterface",
+          "ec2:DescribeNetworkInterfaces",
+          "ec2:DeleteNetworkInterface",
+        ],
+        Resource = "*"
+      },
+    ],
+  })
+}
+resource "aws_iam_role_policy_attachment" "lambda_vpc_access_policy_attachment" {
+  role       = aws_iam_role.lambda_iam_role.name
+  policy_arn = aws_iam_policy.lambda_vpc_access_policy.arn
+}
 resource "aws_iam_role_policy_attachment" "lambda_policy_attachment" {
   role       = aws_iam_role.lambda_iam_role.name
   policy_arn = aws_iam_policy.lambda_policy.arn
