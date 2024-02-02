@@ -10,7 +10,7 @@ resource "aws_lambda_function" "my_lambda" {
   environment {
     variables = {
       CLUSTER_NAME = aws_ecs_cluster.httpd_cluster.name
-      TASK_ID      = aws_ecs_task_definition.httpd.id
+      SERVICE_NAME = aws_ecs_service.httpd_service.name
     }
   }
 
