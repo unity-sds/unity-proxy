@@ -106,7 +106,7 @@ resource "aws_iam_policy" "lambda_ecs_stop_task_policy" {
       {
         Effect = "Allow",
         Action = "ecs:StopTask",
-        Resource = aws_ecs_task_definition.httpd.arn
+        Resource = "*"
       }
     ]
   })
