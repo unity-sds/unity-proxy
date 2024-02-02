@@ -58,6 +58,8 @@ resource "aws_iam_policy" "lambda_policy" {
       },
     ],
   })
+  permissions_boundary = data.aws_iam_policy.mcp_operator_policy.arn
+
 }
 
 resource "aws_iam_role_policy_attachment" "lambda_policy_attachment" {
