@@ -23,10 +23,38 @@ resource "aws_lambda_function" "my_lambda" {
 
   vpc_config {
     subnet_ids         = local.subnet_ids
-    security_group_ids = [aws_security_group.efs_sg.id]
+    security_group_ids = [aws_security_group.lambda_sg.id]
   }
 
 }
+resource "aws_security_group" "lambda_sg" {
+  name        = "${var.deployment_name}-httpd_lambda_sg"
+  description = "Security group for httpd lambda service"
+  vpc_id      = data.aws_ssm_parameter.vpc_id.value
+
+  // Inbound rules
+  // Example: Allow HTTP and HTTPS
+  ingress {
+    from_port   = 2049
+    to_port     = 2049
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  // Outbound rules
+  // Example: Allow all outbound traffic
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Service = "U-CS"
+  }
+}
+
 
 resource "aws_iam_role" "lambda_iam_role" {
   name = "lambda_iam_role"
