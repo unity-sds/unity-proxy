@@ -1,5 +1,5 @@
 resource "aws_lambda_function" "my_lambda" {
-  function_name = "httpdproxymanagement"
+  function_name = "${var.deployment_name}-httpdproxymanagement"
 
   filename      = "${path.module}/lambda.zip"
   handler       = "lambda.lambda_handler"
@@ -24,7 +24,9 @@ resource "aws_lambda_function" "my_lambda" {
     subnet_ids         = local.subnet_ids
     security_group_ids = [aws_security_group.lambda_sg.id]
   }
-
+  tags = {
+    Service = "U-CS"
+  }
 }
 resource "aws_security_group" "lambda_sg" {
   name        = "${var.deployment_name}-httpd_lambda_sg"
@@ -56,7 +58,7 @@ resource "aws_security_group" "lambda_sg" {
 
 
 resource "aws_iam_role" "lambda_iam_role" {
-  name = "lambda_iam_role"
+  name = "${var.deployment_name}-lambda_iam_role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
@@ -75,7 +77,7 @@ resource "aws_iam_role" "lambda_iam_role" {
 }
 
 resource "aws_iam_policy" "lambda_policy" {
-  name        = "lambda_policy"
+  name        = "${var.deployment_name}-lambda_policy"
   description = "A policy for the Lambda function to access EFS"
 
   policy = jsonencode({
@@ -97,7 +99,7 @@ resource "aws_iam_policy" "lambda_policy" {
 }
 
 resource "aws_iam_policy" "lambda_ecs_stop_task_policy" {
-  name        = "lambda_ecs_stop_task_policy"
+  name        = "${var.deployment_name}-lambda_ecs_stop_task_policy"
   description = "Allows Lambda functions to stop ECS tasks"
 
   policy = jsonencode({
@@ -114,7 +116,7 @@ resource "aws_iam_policy" "lambda_ecs_stop_task_policy" {
 
 
 resource "aws_iam_policy" "lambda_vpc_access_policy" {
-  name        = "lambda_vpc_access_policy"
+  name        = "${var.deployment_name}-lambda_vpc_access_policy"
   description = "Allows Lambda functions to manage ENIs for VPC access"
 
   policy = jsonencode({

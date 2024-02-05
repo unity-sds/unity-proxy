@@ -56,5 +56,6 @@ resource "aws_efs_access_point" "httpd_config_ap" {
 
   tags = {
     Name = "${var.deployment_name}-httpd-config-ap"
+    Service = "U-CS"
   }
 }
