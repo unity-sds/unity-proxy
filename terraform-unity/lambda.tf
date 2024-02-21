@@ -156,6 +156,7 @@ resource "aws_ssm_parameter" "lambda_function_name" {
   name  = "/unity/cs/management/httpd/httpd-lambda-name"
   type  = "String"
   value = aws_lambda_function.httpdlambda.function_name
+  overwrite = true
 }
 
 
