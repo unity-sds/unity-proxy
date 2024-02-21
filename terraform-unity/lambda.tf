@@ -1,4 +1,4 @@
-resource "aws_lambda_function" "my_lambda" {
+resource "aws_lambda_function" "httpdlambda" {
   function_name = "${var.deployment_name}-httpdproxymanagement"
 
   filename      = "${path.module}/lambda.zip"
@@ -152,12 +152,19 @@ resource "aws_iam_role_policy_attachment" "lambda_stop_task_policy_attachment" {
   policy_arn = aws_iam_policy.lambda_ecs_stop_task_policy.arn
 }
 
+resource "aws_ssm_parameter" "lambda_function_name" {
+  name  = "/unity/cs/management/httpd/httpd-lambda-name"
+  type  = "String"
+  value = aws_lambda_function.httpdlambda.function_name
+}
+
+
 output "lambda_function_arn" {
   description = "The ARN of the Lambda function"
-  value       = aws_lambda_function.my_lambda.arn
+  value       = aws_lambda_function.httpdlambda.arn
 }
 
 output "lambda_function_name" {
   description = "The name of the Lambda function"
-  value       = aws_lambda_function.my_lambda.function_name
+  value       = aws_lambda_function.httpdlambda.function_name
 }
