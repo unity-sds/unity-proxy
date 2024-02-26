@@ -34,6 +34,10 @@ resource "aws_iam_role_policy_attachment" "ecs_execution_role_policy" {
 }
 
 
+resource "aws_cloudwatch_log_group" "proxyloggroup" {
+  name = "/ecs/managementproxy"
+}
+
 resource "aws_ecs_task_definition" "httpd" {
   family                   = "httpd"
   network_mode             = "awsvpc"
@@ -52,6 +56,7 @@ resource "aws_ecs_task_definition" "httpd" {
     }
   }
 
+
   container_definitions = jsonencode([{
     name  = "httpd"
     image = "ghcr.io/unity-sds/unity-proxy/httpd-proxy:latest"
@@ -61,6 +66,14 @@ resource "aws_ecs_task_definition" "httpd" {
         value = var.mgmt_dns
       }
     ]
+    logConfiguration = {
+      logDriver = "awslogs",
+      options = {
+        awslogs-group         = aws_cloudwatch_log_group.proxyloggroup.name,
+        awslogs-region        = "us-west-2",
+        awslogs-stream-prefix = "ecs"
+      },
+    },
     portMappings = [
       {
         containerPort = 8080
