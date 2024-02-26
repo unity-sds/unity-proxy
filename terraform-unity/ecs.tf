@@ -46,7 +46,7 @@ resource "aws_ecs_task_definition" "httpd" {
 
     efs_volume_configuration {
       file_system_id          = aws_efs_file_system.httpd_config_efs.id
-      root_directory          = "/"
+      root_directory          = "/efs"
       transit_encryption      = "ENABLED"
       transit_encryption_port = 2049
     }

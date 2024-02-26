@@ -11,7 +11,7 @@ fi
 
 # File to be written
 file_path="$efs_mount_point/mgmt.conf"
-
+main_path="$efs_mount_point/main.conf"
 # Ensure the ELB_DNS_NAME environment variable is set
 if [ -z "$ELB_DNS_NAME" ]; then
     echo "ELB_DNS_NAME environment variable is not set"
@@ -19,7 +19,7 @@ if [ -z "$ELB_DNS_NAME" ]; then
 fi
 
 # VirtualHost template with placeholder for DNS_NAME
-vhost_template='<VirtualHost *:8080>
+vhost_template='
 RewriteEngine on
 ProxyPass /management/ http://<DNS_NAME>/
 ProxyPassReverse /management/ http://<DNS_NAME>/
@@ -29,7 +29,7 @@ RewriteCond %{HTTP:Connection} upgrade [NC]
 RewriteRule /management/(.*) ws://<DNS_NAME>/$1 [P,L]
 
 FallbackResource /management/index.html
-</VirtualHost>'
+'
 
 # Replace <DNS_NAME> with actual DNS name
 vhost_config="${vhost_template//<DNS_NAME>/$ELB_DNS_NAME}"
@@ -38,3 +38,13 @@ vhost_config="${vhost_template//<DNS_NAME>/$ELB_DNS_NAME}"
 echo "$vhost_config" > "$file_path"
 
 echo "VirtualHost configuration written to: $file_path"
+
+main_template='
+<VirtualHost *:8080>
+    Include /etc/apache2/sites-enabled/mgmt.conf
+    ### ADD MORE HOSTS BELOW THIS LINE
+
+</VirtualHost>
+'
+
+echo "$main_template" > "$main_path"
