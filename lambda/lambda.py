@@ -33,8 +33,8 @@ def lambda_handler(event, context):
 
 
     # Update main file
-    file_path = "/etc/apache2/sites-enabled/main.conf"
-    new_line = "Include /etc/apache2/sites-enabled/"+filename+".conf"
+    file_path = "/mnt/efs/main.conf"
+    new_line = "    Include /etc/apache2/sites-enabled/"+filename+".conf"
     insert_new_host_line(file_path, new_line)
 
     # Restart an ECS task
