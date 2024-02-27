@@ -48,5 +48,5 @@ main_template='
 '
 
 echo "$main_template" > "$main_path"
-chown 1000:1000 efs/efs/main.conf
-chmod 755 efs/efs/main.conf
+chown 1000:1000 /etc/apache/sites-enabled/main.conf
+chmod 755 /etc/apache/sites-enabled/main.conf
