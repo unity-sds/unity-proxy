@@ -50,5 +50,5 @@ main_template='
 echo "$main_template" > "$main_path"
 echo "Main configuration written to: $main_path"
 
-chown 1000:1000 /etc/apache/sites-enabled/main.conf
-chmod 755 /etc/apache/sites-enabled/main.conf
+chown 1000:1000 /etc/apache2/sites-enabled/main.conf
+chmod 755 /etc/apache2/sites-enabled/main.conf
