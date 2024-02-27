@@ -35,7 +35,7 @@ resource "aws_iam_role_policy_attachment" "ecs_execution_role_policy" {
 
 
 resource "aws_cloudwatch_log_group" "proxyloggroup" {
-  name = "/ecs/managementproxy"
+  name = "/ecs/${var.deployment_name}-managementproxy"
 }
 
 resource "aws_ecs_task_definition" "httpd" {
