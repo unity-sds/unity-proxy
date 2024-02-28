@@ -153,7 +153,7 @@ resource "aws_iam_role_policy_attachment" "lambda_stop_task_policy_attachment" {
 }
 
 resource "aws_ssm_parameter" "lambda_function_name" {
-  name  = "/unity/cs/management/httpd/httpd-lambda-name"
+  name  = "/unity/cs/management/proxy/${var.deployment_name}-httpd-lambda-name"
   type  = "String"
   value = aws_lambda_function.httpdlambda.function_name
   overwrite = true

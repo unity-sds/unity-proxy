@@ -12,3 +12,15 @@ variable "mgmt_dns" {
   description = "The DNS or IP of the ALB or EC2 instance"
   type = string
 }
+
+variable "project"{
+  description = "The unity project its installed into"
+  type = string
+  default = "UnknownProject"
+}
+
+variable "venue" {
+  description = "The unity venue its installed into"
+  type = string
+  default = "UnknownVenue"
+}
