@@ -47,7 +47,7 @@ resource "aws_efs_access_point" "httpd_config_ap" {
   }
 
   root_directory {
-    path = "/efs"
+    path = "/"
     creation_info {
       owner_gid   = 1000
       owner_uid   = 1000
