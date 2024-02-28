@@ -9,6 +9,51 @@ data "aws_iam_policy" "mcp_operator_policy" {
   name = "mcp-tenantOperator-AMI-APIG"
 }
 
+resource "aws_iam_policy" "efs_access" {
+  name        = "EFSAccessPolicy"
+  description = "Policy for ECS tasks to access EFS"
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = [
+          "elasticfilesystem:ClientMount",
+          "elasticfilesystem:ClientWrite",
+          "elasticfilesystem:ClientRootAccess",
+          "elasticfilesystem:DescribeMountTargets",
+        ],
+        Resource = "*",
+      },
+    ],
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "efs_access_attachment" {
+  role       = aws_iam_role.ecs_task_role.name
+  policy_arn = aws_iam_policy.efs_access.arn
+}
+
+resource "aws_iam_role" "ecs_task_role" {
+  name = "ecs_task_role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Principal = {
+          Service = "ecs-tasks.amazonaws.com"
+        },
+        Action = "sts:AssumeRole",
+      },
+    ],
+  })
+  permissions_boundary = data.aws_iam_policy.mcp_operator_policy.arn
+
+}
+
 resource "aws_iam_role" "ecs_execution_role" {
   name = "${var.deployment_name}ecs_execution_role"
 
@@ -39,6 +84,7 @@ resource "aws_cloudwatch_log_group" "proxyloggroup" {
 }
 
 resource "aws_ecs_task_definition" "httpd" {
+  task_role_arn            = aws_iam_role.ecs_task_role.arn
   family                   = "httpd"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
