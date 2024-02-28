@@ -24,3 +24,9 @@ variable "venue" {
   type = string
   default = "UnknownVenue"
 }
+
+variable "installprefix" {
+  description = "The management console install prefix"
+  type = string
+  default = "UnknownPrefix"
+}

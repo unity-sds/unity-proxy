@@ -116,7 +116,7 @@ resource "aws_iam_policy" "lambda_ecs_stop_task_policy" {
 
 
 resource "aws_iam_policy" "lambda_vpc_access_policy" {
-  name        = "${var.deployment_name}-lambda_vpc_access_policy"
+  name        = "${var.installprefix}-lambda_vpc_access_policy"
   description = "Allows Lambda functions to manage ENIs for VPC access"
 
   policy = jsonencode({
