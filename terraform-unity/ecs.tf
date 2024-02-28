@@ -10,7 +10,7 @@ data "aws_iam_policy" "mcp_operator_policy" {
 }
 
 resource "aws_iam_policy" "efs_access" {
-  name        = "EFSAccessPolicy"
+  name        = "${var.deployment_name}-EFSAccessPolicy"
   description = "Policy for ECS tasks to access EFS"
 
   policy = jsonencode({
@@ -36,7 +36,7 @@ resource "aws_iam_role_policy_attachment" "efs_access_attachment" {
 }
 
 resource "aws_iam_role" "ecs_task_role" {
-  name = "ecs_task_role"
+  name = "${var.deployment_name}-ecs_task_role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
