@@ -108,7 +108,7 @@ resource "aws_ecs_task_definition" "httpd" {
 
   container_definitions = jsonencode([{
     name  = "httpd"
-    image = "ghcr.io/unity-sds/unity-proxy/httpd-proxy:latest"
+    image = "ghcr.io/unity-sds/unity-proxy/httpd-proxy:0.13.0"
     environment = [
       {
         name = "ELB_DNS_NAME",
