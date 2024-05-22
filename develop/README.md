@@ -20,7 +20,7 @@ The proxy works by looking at "conf" files in the "sites-enabled" directory with
 
 ## Run the container
 ```
-docker run --name apache2 --rm -p 8080:8080 -v $PWD/sites-enabled:/etc/apache2/sites-enabled 425ffb0c6c2d
+docker run --name apache2 --rm -p 8080:8080 -v $PWD/sites-enabled:/etc/apache2/sites-enabled unity-proxy-dev 
 ```
 
 This will mount the local sites-enabled directory over the default directory so that one can develop quickly. Simply keep tweaking the *.conf file you created until your proxy is working.
