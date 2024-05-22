@@ -24,4 +24,4 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: ghcr.io/${{ github.repository }}/httpd-proxy:${{ github.event.release.name }}  # replace with your image name and tag
+          tags: ghcr.io/${{ github.repository }}/httpd-proxy:${{ github.ref_name }}  # replace with your image name and tag
