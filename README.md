@@ -46,3 +46,21 @@ config to then take effect.
 
 There is currently no way to remove files or fix a broken config other than mounting the EFS mount into an EC2 server and making changes.
 To do this you will need to edit the security group to allow access to the EC2 box and then install the EFS utils.
+
+## Manually adding a file/template
+
+One can execute the httpdmanager lambda function directly with the following json syntax:
+
+```
+{
+  "filename": "example-extension",
+  "template": "SSLProxyEngine On\nProxyPreserveHost On\n\nProxyPass \/hub https:\/\/jupyter.us-west-2.elb.amazonaws.com:443\/hub\/\nProxyPassReverse \/hub https:\/\/jupyter.us-west-2.elb.amazonaws.com:443\/hub\/"
+}
+
+```
+
+The template must be json encoded. I've used https://nddapp.com/json-encoder.html successfully.
+
+
+## How do I know what to add in the 'template' file above?
+We are not perfect human beings. In order to iterate quickly on the above templat contents, we have created a development proxy environment that can be tested mostly locally. Check out the `develop` directory for instructions.
