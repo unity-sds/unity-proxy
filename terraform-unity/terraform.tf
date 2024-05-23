@@ -11,7 +11,7 @@ data "aws_ssm_parameter" "subnet_list" {
 #}
 
 locals {
-  subnet_map = jsondecode(data.aws_ssm_parameter.subnet_list.value)
-  subnet_ids = nonsensitive(local.subnet_map["private"])
+  subnet_map        = jsondecode(data.aws_ssm_parameter.subnet_list.value)
+  subnet_ids        = nonsensitive(local.subnet_map["private"])
   public_subnet_ids = nonsensitive(local.subnet_map["public"])
 }

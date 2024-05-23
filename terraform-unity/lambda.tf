@@ -1,23 +1,17 @@
 resource "aws_lambda_function" "httpdlambda" {
   function_name = "${var.deployment_name}-httpdproxymanagement"
 
-  filename      = "${path.module}/lambda.zip"
-  handler       = "lambda.lambda_handler"
-  runtime       = "python3.8"
+  filename = "${path.module}/lambda.zip"
+  handler  = "lambda.lambda_handler"
+  runtime  = "python3.8"
 
-  role          = aws_iam_role.lambda_iam_role.arn
+  role = aws_iam_role.lambda_iam_role.arn
 
   environment {
     variables = {
       CLUSTER_NAME = aws_ecs_cluster.httpd_cluster.name
       SERVICE_NAME = aws_ecs_service.httpd_service.name
     }
-  }
-
-  # EFS configuration
-  file_system_config {
-    arn = aws_efs_access_point.httpd_config_ap.arn
-    local_mount_path = "/mnt/efs" # Lambda will access the EFS at this mount path
   }
 
   vpc_config {
@@ -76,28 +70,6 @@ resource "aws_iam_role" "lambda_iam_role" {
 
 }
 
-resource "aws_iam_policy" "lambda_policy" {
-  name        = "${var.deployment_name}-lambda_policy"
-  description = "A policy for the Lambda function to access EFS"
-
-  policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [
-      {
-        Action = [
-          "elasticfilesystem:ClientMount",
-          "elasticfilesystem:ClientWrite",
-        ],
-        Effect = "Allow",
-        Resource = [
-          aws_efs_file_system.httpd_config_efs.arn
-        ],
-      },
-    ],
-  })
-
-}
-
 resource "aws_iam_policy" "lambda_ecs_stop_task_policy" {
   name        = "${var.deployment_name}-lambda_ecs_stop_task_policy"
   description = "Allows Lambda functions to stop ECS tasks"
@@ -106,8 +78,8 @@ resource "aws_iam_policy" "lambda_ecs_stop_task_policy" {
     Version = "2012-10-17",
     Statement = [
       {
-        Effect = "Allow",
-        Action = ["ecs:ListTasks","ecs:StopTask"],
+        Effect   = "Allow",
+        Action   = ["ecs:ListTasks", "ecs:StopTask"],
         Resource = "*"
       }
     ]
@@ -142,10 +114,6 @@ resource "aws_iam_role_policy_attachment" "lambda_base_policy_attachment" {
   role       = aws_iam_role.lambda_iam_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
-resource "aws_iam_role_policy_attachment" "lambda_policy_attachment" {
-  role       = aws_iam_role.lambda_iam_role.name
-  policy_arn = aws_iam_policy.lambda_policy.arn
-}
 
 resource "aws_iam_role_policy_attachment" "lambda_stop_task_policy_attachment" {
   role       = aws_iam_role.lambda_iam_role.name
@@ -153,10 +121,9 @@ resource "aws_iam_role_policy_attachment" "lambda_stop_task_policy_attachment" {
 }
 
 resource "aws_ssm_parameter" "lambda_function_name" {
-  name  = "/unity/${var.project}/${var.venue}/cs/management/proxy/lambda-name"
-  type  = "String"
-  value = aws_lambda_function.httpdlambda.function_name
-  overwrite = true
+  name      = "/unity/${var.project}/${var.venue}/cs/management/proxy/lambda-name"
+  type      = "String"
+  value     = aws_lambda_function.httpdlambda.function_name
 }
 
 
@@ -168,4 +135,21 @@ output "lambda_function_arn" {
 output "lambda_function_name" {
   description = "The name of the Lambda function"
   value       = aws_lambda_function.httpdlambda.function_name
+}
+
+resource "aws_ssm_parameter" "managementproxy_config" {
+  name  = "/unity/${var.project}/${var.venue}/cs/management/proxy/configurations/010-management"
+  type  = "String"
+  value = <<-EOT
+    <Location "/management/">
+        RewriteEngine on
+        ProxyPass http://${var.mgmt_dns}/
+        ProxyPassReverse http://${var.mgmt_dns}/
+        ProxyPreserveHost On
+        RewriteCond %\{HTTP:Upgrade} websocket [NC]
+        RewriteCond %\{HTTP:Connection} upgrade [NC]
+        RewriteRule (.*) ws://${var.mgmt_dns}/$1 [P,L]
+        FallbackResource /management/index.html
+    </Location>
+EOT
 }
