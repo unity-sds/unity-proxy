@@ -26,14 +26,11 @@ def fetch_config_ssm(project, venue):
 
 
 def template_file(parameters, debug):
-    vhost_header = "<VirtualHost *:8080>\n"
-    vhost_footer = "\n</VirtualHost>"
     # sort the parameters by the ssm param name, and then make a list of just
     # their values for insertion
-    param_config = [parm["Value"] for parm in sorted(parameters, key=lambda x: x["Name"])]
-    # then add in the vhost header and footer
-    param_config.insert(0, vhost_header)
-    param_config.append(vhost_footer)
+    param_config = [
+        parm["Value"] for parm in sorted(parameters, key=lambda x: x["Name"])
+    ]
     if debug:  # so we can debug what SSM says it should/will be
         for ln in param_config:
             print(ln)

@@ -153,5 +153,6 @@ resource "aws_ecs_service" "httpd_service" {
   }
   depends_on = [
     aws_lb_listener.httpd_listener,
+    aws_ssm_parameter.managementproxy_config
   ]
 }

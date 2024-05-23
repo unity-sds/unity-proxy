@@ -121,9 +121,9 @@ resource "aws_iam_role_policy_attachment" "lambda_stop_task_policy_attachment" {
 }
 
 resource "aws_ssm_parameter" "lambda_function_name" {
-  name      = "/unity/${var.project}/${var.venue}/cs/management/proxy/lambda-name"
-  type      = "String"
-  value     = aws_lambda_function.httpdlambda.function_name
+  name  = "/unity/${var.project}/${var.venue}/cs/management/proxy/lambda-name"
+  type  = "String"
+  value = aws_lambda_function.httpdlambda.function_name
 }
 
 
@@ -135,21 +135,4 @@ output "lambda_function_arn" {
 output "lambda_function_name" {
   description = "The name of the Lambda function"
   value       = aws_lambda_function.httpdlambda.function_name
-}
-
-resource "aws_ssm_parameter" "managementproxy_config" {
-  name  = "/unity/${var.project}/${var.venue}/cs/management/proxy/configurations/010-management"
-  type  = "String"
-  value = <<-EOT
-    <Location "/management/">
-        RewriteEngine on
-        ProxyPass http://${var.mgmt_dns}/
-        ProxyPassReverse http://${var.mgmt_dns}/
-        ProxyPreserveHost On
-        RewriteCond %\{HTTP:Upgrade} websocket [NC]
-        RewriteCond %\{HTTP:Connection} upgrade [NC]
-        RewriteRule (.*) ws://${var.mgmt_dns}/$1 [P,L]
-        FallbackResource /management/index.html
-    </Location>
-EOT
 }
