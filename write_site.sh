@@ -19,23 +19,17 @@ if [ -z "$ELB_DNS_NAME" ]; then
 fi
 
 # VirtualHost template with placeholder for DNS_NAME
-vhost_template='
+cat <<EOF > "${file_path}"
 RewriteEngine on
-ProxyPass /management/ http://<DNS_NAME>/
-ProxyPassReverse /management/ http://<DNS_NAME>/
+ProxyPass /management/ http://${ELB_DNS_NAME}/
+ProxyPassReverse /management/ http://${ELB_DNS_NAME}/
 ProxyPreserveHost On
 RewriteCond %{HTTP:Upgrade} websocket [NC]
 RewriteCond %{HTTP:Connection} upgrade [NC]
-RewriteRule /management/(.*) ws://<DNS_NAME>/$1 [P,L]
+RewriteRule /management/(.*) ws://${ELB_DNS_NAME}/\$1 [P,L]
 
 FallbackResource /management/index.html
-'
-
-# Replace <DNS_NAME> with actual DNS name
-vhost_config="${vhost_template//<DNS_NAME>/$ELB_DNS_NAME}"
-
-# Write the configuration to the file
-echo "$vhost_config" > "$file_path"
+EOF
 
 echo "VirtualHost configuration written to: $file_path"
 

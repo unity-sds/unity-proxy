@@ -14,16 +14,13 @@ def fetch_config_ssm(project, venue):
         Recursive=True,
         ParameterFilters=[
             {
-                "Key": "string",
-                "Option": "string",
+                "Key": "Type",
                 "Values": [
-                    "string",
+                    "String",
                 ],
             },
         ],
         WithDecryption=False,
-        MaxResults=20,
-        NextToken="string",
     )
     return parameters["Parameters"]
 
@@ -33,7 +30,7 @@ def template_file(parameters, debug):
     vhost_footer = "\n</VirtualHost>"
     # sort the parameters by the ssm param name, and then make a list of just
     # their values for insertion
-    param_config = [parm.value for parm in sorted(parameters, key=lambda x: x["Name"])]
+    param_config = [parm["Value"] for parm in sorted(parameters, key=lambda x: x["Name"])]
     # then add in the vhost header and footer
     param_config.insert(0, vhost_header)
     param_config.append(vhost_footer)
