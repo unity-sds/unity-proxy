@@ -1,3 +1,12 @@
+data "local_file" "unity_yaml" {
+  filename = "/home/ubuntu/.unity/unity.yaml"
+}
+locals {
+  unity_config = yamldecode(data.local_file.unity_yaml.content)
+  project      = local.unity_config.project
+  venue        = local.unity_config.venue
+}
+
 # Create an Application Load Balancer (ALB)
 resource "aws_lb" "httpd_alb" {
   name               = "${var.deployment_name}-httpd-alb"
@@ -50,7 +59,7 @@ resource "aws_lb_listener" "httpd_listener" {
 
 
 resource "aws_ssm_parameter" "mgmt_endpoint" {
-  name = "/unity/cs/management/httpd/loadbalancer-url"
+  name = "/unity/${local.project}/${local.venue}/management/httpd/loadbalancer-url"
   type = "String"
   value = "${aws_lb_listener.httpd_listener.protocol}://${aws_lb.httpd_alb.dns_name}:${aws_lb_listener.httpd_listener.port}/management/ui"
   overwrite = true
