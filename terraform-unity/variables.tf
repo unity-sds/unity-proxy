@@ -35,5 +35,5 @@ variable "installprefix" {
 variable "httpd_proxy_version" {
   description = "The version of the httpd proxy container"
   type        = string
-  default     = "0.13.0"
+  default     = "dc16bff"
 }
