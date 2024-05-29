@@ -28,6 +28,11 @@ resource "aws_iam_role" "ecs_task_role" {
 
 }
 
+resource "aws_iam_role_policy_attachment" "ecs_ssm_role_policy" {
+  role       = aws_iam_role.ecs_task_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMReadOnlyAccess"
+}
+
 resource "aws_iam_role" "ecs_execution_role" {
   name = "${var.deployment_name}ecs_execution_role"
 
@@ -51,7 +56,6 @@ resource "aws_iam_role_policy_attachment" "ecs_execution_role_policy" {
   role       = aws_iam_role.ecs_execution_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
-
 
 resource "aws_cloudwatch_log_group" "proxyloggroup" {
   name = "/ecs/${var.deployment_name}-managementproxy"

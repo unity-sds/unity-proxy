@@ -59,7 +59,7 @@ resource "aws_lb_listener" "httpd_listener" {
 
 
 resource "aws_ssm_parameter" "mgmt_endpoint" {
-  name = "/unity/${local.project}/${local.venue}/management/httpd/loadbalancer-url"
-  type = "String"
+  name  = "/unity/${local.project}/${local.venue}/management/httpd/loadbalancer-url"
+  type  = "String"
   value = "${aws_lb_listener.httpd_listener.protocol}://${aws_lb.httpd_alb.dns_name}:${aws_lb_listener.httpd_listener.port}/management/ui"
 }
