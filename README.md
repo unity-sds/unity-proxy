@@ -77,7 +77,7 @@ RewriteRule /management/(.*) ws://internal-unity-mc-alb-hzs9j-1269535099.us-west
 This repository configures only one virtualhost (both open and close directives), but others may be added. This can be accomplished by simply adding more SSM parameters:
 ```
 resource "aws_ssm_parameter" "managementproxy_openvirtualhost" {
-  name  = "/unity/${var.project}/${var.venue}/cs/management/proxy/configurations/001-openvirtualhost"
+  name  = "/unity/${var.project}/${var.venue}/cs/management/proxy/configurations/001-openvhost8080"
   type  = "String"
   value = <<-EOT
   <VirtualHost *:8080>
@@ -86,7 +86,7 @@ EOT
 
 resource "aws_ssm_parameter" "managementproxy_closevirtualhost" {
   depends_on = [aws_ssm_parameter.managementproxy_openvirtualhost]
-  name       = "/unity/${var.project}/${var.venue}/cs/management/proxy/configurations/100-closevirtualhost"
+  name       = "/unity/${var.project}/${var.venue}/cs/management/proxy/configurations/100-closevhost8080"
   type       = "String"
   value      = <<-EOT
   </VirtualHost>
@@ -94,9 +94,9 @@ EOT
 }
 ```
 NOTE the names of each of these SSM parameters:
- - 001-openvirtualhost
+ - 001-openvhost8080
  - 010-management
- - 100-closevirtualhost
+ - 100-closevhost8080
 
 For additional virtualhosts, please pick an ordinal number range that is *greater* than 100 (e.g. 101-openTestHost, 120-closeTestHost).
 
