@@ -6,61 +6,99 @@ To enable/disable modules, update and change the HTTPD installation then there i
 
 The webservers default port is also 8080 to let it traverse the MCP NACL.
 
-When deployed this terraform code creates an ECS cluster, with an EFS backend that then allows us to store apache configs
-in a filesystem that wont vanish when it restarts. As such the EFS filesystem also needs a way to create new files, this is
-done via a lambda function that writes valid apache config files to the EFS mount.
+When deployed this terraform code creates an ECS cluster, with a baseline set of SSM parameters that other services can then extend with their own Apache HTTPD configurations. The configurations are pulled down and collated by the container on restart, so reloading of the configuration after changes is handled by triggering a lambda function.
 
-A sample trigger:
+A sample configuration snippet and trigger:
 ```
-variable "template" {
-  default = <<EOT
-                  RewriteEngine on
-                  ProxyPass /sample http://test-demo-alb-616613476.us-west-2.elb.amazonaws.com:8888/sample/hello.jsp
-                  ProxyPassReverse /sample http://test-demo-alb-616613476.us-west-2.elb.amazonaws.com:8888/sample/hello.jsp
+resource "aws_ssm_parameter" "managementproxy_config" {
+  depends_on = [aws_ssm_parameter.managementproxy_closevirtualhost]
+  name       = "/unity/${var.project}/${var.venue}/cs/management/proxy/configurations/010-management"
+  type       = "String"
+  value      = <<-EOT
+
+    RewriteEngine on
+    RewriteCond %%{HTTP:Upgrade} websocket [NC]
+    RewriteCond %%{HTTP:Connection} upgrade [NC]
+    RewriteRule /management/(.*) ws://${var.mgmt_dns}/$1 [P,L]
+    <Location "/management/">
+        ProxyPass http://${var.mgmt_dns}/
+        ProxyPassReverse http://${var.mgmt_dns}/
+        ProxyPreserveHost On
+        FallbackResource /management/index.html
+    </Location>
 
 EOT
 }
 
 resource "aws_lambda_invocation" "demoinvocation2" {
-  function_name = "ZwUycV-unity-proxy-httpdproxymanagement"
-
-  input = jsonencode({
-    filename  = "example_filename1",
-    template = var.template
-  })
-
+  function_name = "${var.project}-${var.venue}-httpdproxymanagement"
 }
 ```
-The config files are written as flat configs. They are then used inside a main apache2 config like this:
 
+
+The configuration is collated from SSM parameters residing under `/unity/${var.project}/${var.venue}/cs/management/proxy/configurations/`, and assembled like so:
 ```
 <VirtualHost *:8080>
-    Include /etc/apache2/sites-enabled/mgmt.conf
-    ### ADD MORE HOSTS BELOW THIS LINE
+
+RewriteEngine on
+RewriteCond %{HTTP:Upgrade} websocket [NC]
+RewriteCond %{HTTP:Connection} upgrade [NC]
+RewriteRule /management/(.*) ws://internal-unity-mc-alb-hzs9j-1269535099.us-west-2.elb.amazonaws.com:8080/$1 [P,L]
+<Location "/management/">
+    ProxyPass http://internal-unity-mc-alb-hzs9j-1269535099.us-west-2.elb.amazonaws.com:8080/
+    ProxyPassReverse http://internal-unity-mc-alb-hzs9j-1269535099.us-west-2.elb.amazonaws.com:8080/
+    ProxyPreserveHost On
+    FallbackResource /management/index.html
+</Location>
 
 </VirtualHost>
 ```
 
-They will be added as additional config files below the comment line. The httpd task is then restarted to allow the 
-config to then take effect.
+Live checking of the "current" configuration may be accomplished with `write_site.py` in a local environment:
+```
+% DEBUG=yes UNITY_PROJECT=btlunsfo UNITY_VENUE=dev11  python write_site.py
+<VirtualHost *:8080>
 
-There is currently no way to remove files or fix a broken config other than mounting the EFS mount into an EC2 server and making changes.
-To do this you will need to edit the security group to allow access to the EC2 box and then install the EFS utils.
+RewriteEngine on
+RewriteCond %{HTTP:Upgrade} websocket [NC]
+RewriteCond %{HTTP:Connection} upgrade [NC]
+RewriteRule /management/(.*) ws://internal-unity-mc-alb-hzs9j-1269535099.us-west-2.elb.amazonaws.com:8080/$1 [P,L]
+<Location "/management/">
+    ProxyPass http://internal-unity-mc-alb-hzs9j-1269535099.us-west-2.elb.amazonaws.com:8080/
+    ProxyPassReverse http://internal-unity-mc-alb-hzs9j-1269535099.us-west-2.elb.amazonaws.com:8080/
+    ProxyPreserveHost On
+    FallbackResource /management/index.html
+</Location>
 
-## Manually adding a file/template
-
-One can execute the httpdmanager lambda function directly with the following json syntax:
+</VirtualHost>
 
 ```
-{
-  "filename": "example-extension",
-  "template": "SSLProxyEngine On\nProxyPreserveHost On\n\nProxyPass \/hub https:\/\/jupyter.us-west-2.elb.amazonaws.com:443\/hub\/\nProxyPassReverse \/hub https:\/\/jupyter.us-west-2.elb.amazonaws.com:443\/hub\/"
+
+This repository configures only one virtualhost (both open and close directives), but others may be added. This can be accomplished by simply adding more SSM parameters:
+```
+resource "aws_ssm_parameter" "managementproxy_openvirtualhost" {
+  name  = "/unity/${var.project}/${var.venue}/cs/management/proxy/configurations/001-openvhost8080"
+  type  = "String"
+  value = <<-EOT
+  <VirtualHost *:8080>
+EOT
 }
 
+resource "aws_ssm_parameter" "managementproxy_closevirtualhost" {
+  depends_on = [aws_ssm_parameter.managementproxy_openvirtualhost]
+  name       = "/unity/${var.project}/${var.venue}/cs/management/proxy/configurations/100-closevhost8080"
+  type       = "String"
+  value      = <<-EOT
+  </VirtualHost>
+EOT
+}
 ```
+NOTE the names of each of these SSM parameters:
+ - 001-openvhost8080
+ - 010-management
+ - 100-closevhost8080
 
-The template must be json encoded. I've used https://nddapp.com/json-encoder.html successfully.
-
+For additional virtualhosts, please pick an ordinal number range that is *greater* than 100 (e.g. 101-openTestHost, 120-closeTestHost).
 
 ## How do I know what to add in the 'template' file above?
 We are not perfect human beings. In order to iterate quickly on the above templat contents, we have created a development proxy environment that can be tested mostly locally. Check out the `develop` directory for instructions.

@@ -1,8 +1,10 @@
+# tflint-ignore: terraform_unused_declarations
 variable "tags" {
   description = "AWS Tags"
-  type = map(string)
+  type        = map(string)
 }
 
+# tflint-ignore: terraform_unused_declarations
 variable "deployment_name" {
   description = "The deployment name"
   type        = string
@@ -10,23 +12,30 @@ variable "deployment_name" {
 
 variable "mgmt_dns" {
   description = "The DNS or IP of the ALB or EC2 instance"
-  type = string
+  type        = string
 }
 
-variable "project"{
+variable "project" {
   description = "The unity project its installed into"
-  type = string
-  default = "UnknownProject"
+  type        = string
+  default     = "UnknownProject"
 }
 
 variable "venue" {
   description = "The unity venue its installed into"
-  type = string
-  default = "UnknownVenue"
+  type        = string
+  default     = "UnknownVenue"
 }
 
+# tflint-ignore: terraform_unused_declarations
 variable "installprefix" {
   description = "The management console install prefix"
-  type = string
-  default = "UnknownPrefix"
+  type        = string
+  default     = "UnknownPrefix"
+}
+
+variable "httpd_proxy_version" {
+  description = "The version of the httpd proxy container"
+  type        = string
+  default     = "0.15.0"
 }

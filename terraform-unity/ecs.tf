@@ -1,5 +1,5 @@
 resource "aws_ecs_cluster" "httpd_cluster" {
-  name = "${var.deployment_name}-httpd-cluster"
+  name = "${var.project}-${var.venue}-httpd-cluster"
   tags = {
     Service = "U-CS"
   }
@@ -9,34 +9,8 @@ data "aws_iam_policy" "mcp_operator_policy" {
   name = "mcp-tenantOperator-AMI-APIG"
 }
 
-resource "aws_iam_policy" "efs_access" {
-  name        = "${var.deployment_name}-EFSAccessPolicy"
-  description = "Policy for ECS tasks to access EFS"
-
-  policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [
-      {
-        Effect = "Allow",
-        Action = [
-          "elasticfilesystem:ClientMount",
-          "elasticfilesystem:ClientWrite",
-          "elasticfilesystem:ClientRootAccess",
-          "elasticfilesystem:DescribeMountTargets",
-        ],
-        Resource = "*",
-      },
-    ],
-  })
-}
-
-resource "aws_iam_role_policy_attachment" "efs_access_attachment" {
-  role       = aws_iam_role.ecs_task_role.name
-  policy_arn = aws_iam_policy.efs_access.arn
-}
-
 resource "aws_iam_role" "ecs_task_role" {
-  name = "${var.deployment_name}-ecs_task_role"
+  name = "${var.project}-${var.venue}-ecs_task_role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
@@ -54,8 +28,13 @@ resource "aws_iam_role" "ecs_task_role" {
 
 }
 
+resource "aws_iam_role_policy_attachment" "ecs_ssm_role_policy" {
+  role       = aws_iam_role.ecs_task_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMReadOnlyAccess"
+}
+
 resource "aws_iam_role" "ecs_execution_role" {
-  name = "${var.deployment_name}ecs_execution_role"
+  name = "${var.project}-${var.venue}ecs_execution_role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
@@ -78,9 +57,8 @@ resource "aws_iam_role_policy_attachment" "ecs_execution_role_policy" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
 
-
 resource "aws_cloudwatch_log_group" "proxyloggroup" {
-  name = "/ecs/${var.deployment_name}-managementproxy"
+  name = "/ecs/${var.project}-${var.venue}-managementproxy"
 }
 
 resource "aws_ecs_task_definition" "httpd" {
@@ -91,28 +69,19 @@ resource "aws_ecs_task_definition" "httpd" {
   execution_role_arn       = aws_iam_role.ecs_execution_role.arn
   memory                   = "512"
   cpu                      = "256"
-  volume {
-    name = "httpd-config"
-
-    efs_volume_configuration {
-      file_system_id          = aws_efs_file_system.httpd_config_efs.id
-      transit_encryption      = "ENABLED"
-      transit_encryption_port = 2049
-      authorization_config {
-        access_point_id = aws_efs_access_point.httpd_config_ap.id
-        iam = "ENABLED"
-      }
-    }
-  }
 
 
   container_definitions = jsonencode([{
     name  = "httpd"
-    image = "ghcr.io/unity-sds/unity-proxy/httpd-proxy:0.13.0"
+    image = "ghcr.io/unity-sds/unity-proxy/httpd-proxy:${var.httpd_proxy_version}"
     environment = [
       {
-        name = "ELB_DNS_NAME",
-        value = var.mgmt_dns
+        name  = "UNITY_PROJECT",
+        value = var.project
+      },
+      {
+        name  = "UNITY_VENUE",
+        value = var.venue
       }
     ]
     logConfiguration = {
@@ -129,12 +98,6 @@ resource "aws_ecs_task_definition" "httpd" {
         hostPort      = 8080
       }
     ]
-    mountPoints = [
-      {
-        containerPath = "/etc/apache2/sites-enabled/"
-        sourceVolume  = "httpd-config"
-      }
-    ]
   }])
   tags = {
     Service = "U-CS"
@@ -142,7 +105,7 @@ resource "aws_ecs_task_definition" "httpd" {
 }
 
 resource "aws_security_group" "ecs_sg" {
-  name        = "${var.deployment_name}-ecs_service_sg"
+  name        = "${var.project}-${var.venue}-ecs_service_sg"
   description = "Security group for ECS service"
   vpc_id      = data.aws_ssm_parameter.vpc_id.value
 
@@ -194,5 +157,6 @@ resource "aws_ecs_service" "httpd_service" {
   }
   depends_on = [
     aws_lb_listener.httpd_listener,
+    aws_ssm_parameter.managementproxy_config
   ]
 }

@@ -1,23 +1,17 @@
 resource "aws_lambda_function" "httpdlambda" {
-  function_name = "${var.deployment_name}-httpdproxymanagement"
+  function_name = "${var.project}-${var.venue}-httpdproxymanagement"
 
-  filename      = "${path.module}/lambda.zip"
-  handler       = "lambda.lambda_handler"
-  runtime       = "python3.8"
+  filename = "${path.module}/lambda.zip"
+  handler  = "lambda.lambda_handler"
+  runtime  = "python3.8"
 
-  role          = aws_iam_role.lambda_iam_role.arn
+  role = aws_iam_role.lambda_iam_role.arn
 
   environment {
     variables = {
       CLUSTER_NAME = aws_ecs_cluster.httpd_cluster.name
       SERVICE_NAME = aws_ecs_service.httpd_service.name
     }
-  }
-
-  # EFS configuration
-  file_system_config {
-    arn = aws_efs_access_point.httpd_config_ap.arn
-    local_mount_path = "/mnt/efs" # Lambda will access the EFS at this mount path
   }
 
   vpc_config {
@@ -29,7 +23,7 @@ resource "aws_lambda_function" "httpdlambda" {
   }
 }
 resource "aws_security_group" "lambda_sg" {
-  name        = "${var.deployment_name}-httpd_lambda_sg"
+  name        = "${var.project}-${var.venue}-httpd_lambda_sg"
   description = "Security group for httpd lambda service"
   vpc_id      = data.aws_ssm_parameter.vpc_id.value
 
@@ -58,7 +52,7 @@ resource "aws_security_group" "lambda_sg" {
 
 
 resource "aws_iam_role" "lambda_iam_role" {
-  name = "${var.deployment_name}-lambda_iam_role"
+  name = "${var.project}-${var.venue}-lambda_iam_role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
@@ -76,38 +70,16 @@ resource "aws_iam_role" "lambda_iam_role" {
 
 }
 
-resource "aws_iam_policy" "lambda_policy" {
-  name        = "${var.deployment_name}-lambda_policy"
-  description = "A policy for the Lambda function to access EFS"
-
-  policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [
-      {
-        Action = [
-          "elasticfilesystem:ClientMount",
-          "elasticfilesystem:ClientWrite",
-        ],
-        Effect = "Allow",
-        Resource = [
-          aws_efs_file_system.httpd_config_efs.arn
-        ],
-      },
-    ],
-  })
-
-}
-
 resource "aws_iam_policy" "lambda_ecs_stop_task_policy" {
-  name        = "${var.deployment_name}-lambda_ecs_stop_task_policy"
+  name        = "${var.project}-${var.venue}-lambda_ecs_stop_task_policy"
   description = "Allows Lambda functions to stop ECS tasks"
 
   policy = jsonencode({
     Version = "2012-10-17",
     Statement = [
       {
-        Effect = "Allow",
-        Action = ["ecs:ListTasks","ecs:StopTask"],
+        Effect   = "Allow",
+        Action   = ["ecs:ListTasks", "ecs:StopTask"],
         Resource = "*"
       }
     ]
@@ -116,7 +88,7 @@ resource "aws_iam_policy" "lambda_ecs_stop_task_policy" {
 
 
 resource "aws_iam_policy" "lambda_vpc_access_policy" {
-  name        = "${var.installprefix}-lambda_vpc_access_policy"
+  name        = "${var.project}-${var.venue}-lambda_vpc_access_policy"
   description = "Allows Lambda functions to manage ENIs for VPC access"
 
   policy = jsonencode({
@@ -142,10 +114,6 @@ resource "aws_iam_role_policy_attachment" "lambda_base_policy_attachment" {
   role       = aws_iam_role.lambda_iam_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
-resource "aws_iam_role_policy_attachment" "lambda_policy_attachment" {
-  role       = aws_iam_role.lambda_iam_role.name
-  policy_arn = aws_iam_policy.lambda_policy.arn
-}
 
 resource "aws_iam_role_policy_attachment" "lambda_stop_task_policy_attachment" {
   role       = aws_iam_role.lambda_iam_role.name
@@ -156,7 +124,6 @@ resource "aws_ssm_parameter" "lambda_function_name" {
   name  = "/unity/${var.project}/${var.venue}/cs/management/proxy/lambda-name"
   type  = "String"
   value = aws_lambda_function.httpdlambda.function_name
-  overwrite = true
 }
 
 
