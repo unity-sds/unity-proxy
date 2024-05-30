@@ -4,6 +4,7 @@ variable "tags" {
   type        = map(string)
 }
 
+# tflint-ignore: terraform_unused_declarations
 variable "deployment_name" {
   description = "The deployment name"
   type        = string
@@ -26,6 +27,7 @@ variable "venue" {
   default     = "UnknownVenue"
 }
 
+# tflint-ignore: terraform_unused_declarations
 variable "installprefix" {
   description = "The management console install prefix"
   type        = string
@@ -35,5 +37,5 @@ variable "installprefix" {
 variable "httpd_proxy_version" {
   description = "The version of the httpd proxy container"
   type        = string
-  default     = "dc16bff"
+  default     = "0.15.0"
 }

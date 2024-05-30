@@ -1,15 +1,6 @@
-data "local_file" "unity_yaml" {
-  filename = "/home/ubuntu/.unity/unity.yaml"
-}
-locals {
-  unity_config = yamldecode(data.local_file.unity_yaml.content)
-  project      = local.unity_config.project
-  venue        = local.unity_config.venue
-}
-
 # Create an Application Load Balancer (ALB)
 resource "aws_lb" "httpd_alb" {
-  name                       = "${var.deployment_name}-httpd-alb"
+  name                       = "${var.project}-${var.venue}-httpd-alb"
   internal                   = false
   load_balancer_type         = "application"
   security_groups            = [aws_security_group.ecs_sg.id]
@@ -22,7 +13,7 @@ resource "aws_lb" "httpd_alb" {
 
 # Create a Target Group for httpd
 resource "aws_lb_target_group" "httpd_tg" {
-  name        = "${var.deployment_name}-httpd-tg"
+  name        = "${var.project}-${var.venue}-httpd-tg"
   port        = 8080
   protocol    = "HTTP"
   vpc_id      = data.aws_ssm_parameter.vpc_id.value
@@ -57,9 +48,8 @@ resource "aws_lb_listener" "httpd_listener" {
   }
 }
 
-
 resource "aws_ssm_parameter" "mgmt_endpoint" {
-  name  = "/unity/${local.project}/${local.venue}/management/httpd/loadbalancer-url"
+  name  = "/unity/${var.project}/${var.venue}/management/httpd/loadbalancer-url"
   type  = "String"
   value = "${aws_lb_listener.httpd_listener.protocol}://${aws_lb.httpd_alb.dns_name}:${aws_lb_listener.httpd_listener.port}/management/ui"
 }

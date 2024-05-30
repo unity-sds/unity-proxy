@@ -1,5 +1,5 @@
 resource "aws_ecs_cluster" "httpd_cluster" {
-  name = "${var.deployment_name}-httpd-cluster"
+  name = "${var.project}-${var.venue}-httpd-cluster"
   tags = {
     Service = "U-CS"
   }
@@ -10,7 +10,7 @@ data "aws_iam_policy" "mcp_operator_policy" {
 }
 
 resource "aws_iam_role" "ecs_task_role" {
-  name = "${var.deployment_name}-ecs_task_role"
+  name = "${var.project}-${var.venue}-ecs_task_role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
@@ -34,7 +34,7 @@ resource "aws_iam_role_policy_attachment" "ecs_ssm_role_policy" {
 }
 
 resource "aws_iam_role" "ecs_execution_role" {
-  name = "${var.deployment_name}ecs_execution_role"
+  name = "${var.project}-${var.venue}ecs_execution_role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
@@ -58,7 +58,7 @@ resource "aws_iam_role_policy_attachment" "ecs_execution_role_policy" {
 }
 
 resource "aws_cloudwatch_log_group" "proxyloggroup" {
-  name = "/ecs/${var.deployment_name}-managementproxy"
+  name = "/ecs/${var.project}-${var.venue}-managementproxy"
 }
 
 resource "aws_ecs_task_definition" "httpd" {
@@ -105,7 +105,7 @@ resource "aws_ecs_task_definition" "httpd" {
 }
 
 resource "aws_security_group" "ecs_sg" {
-  name        = "${var.deployment_name}-ecs_service_sg"
+  name        = "${var.project}-${var.venue}-ecs_service_sg"
   description = "Security group for ECS service"
   vpc_id      = data.aws_ssm_parameter.vpc_id.value
 

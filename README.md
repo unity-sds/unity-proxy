@@ -17,8 +17,8 @@ resource "aws_ssm_parameter" "managementproxy_config" {
   value      = <<-EOT
 
     RewriteEngine on
-    RewriteCond %{HTTP:Upgrade} websocket [NC]
-    RewriteCond %{HTTP:Connection} upgrade [NC]
+    RewriteCond %%{HTTP:Upgrade} websocket [NC]
+    RewriteCond %%{HTTP:Connection} upgrade [NC]
     RewriteRule /management/(.*) ws://${var.mgmt_dns}/$1 [P,L]
     <Location "/management/">
         ProxyPass http://${var.mgmt_dns}/
@@ -31,7 +31,7 @@ EOT
 }
 
 resource "aws_lambda_invocation" "demoinvocation2" {
-  function_name = "qQGkGB-unity-proxy-httpdproxymanagement"
+  function_name = "${var.project}-${var.venue}-httpdproxymanagement"
 }
 ```
 

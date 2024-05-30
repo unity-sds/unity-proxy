@@ -1,5 +1,5 @@
 resource "aws_lambda_function" "httpdlambda" {
-  function_name = "${var.deployment_name}-httpdproxymanagement"
+  function_name = "${var.project}-${var.venue}-httpdproxymanagement"
 
   filename = "${path.module}/lambda.zip"
   handler  = "lambda.lambda_handler"
@@ -23,7 +23,7 @@ resource "aws_lambda_function" "httpdlambda" {
   }
 }
 resource "aws_security_group" "lambda_sg" {
-  name        = "${var.deployment_name}-httpd_lambda_sg"
+  name        = "${var.project}-${var.venue}-httpd_lambda_sg"
   description = "Security group for httpd lambda service"
   vpc_id      = data.aws_ssm_parameter.vpc_id.value
 
@@ -52,7 +52,7 @@ resource "aws_security_group" "lambda_sg" {
 
 
 resource "aws_iam_role" "lambda_iam_role" {
-  name = "${var.deployment_name}-lambda_iam_role"
+  name = "${var.project}-${var.venue}-lambda_iam_role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
@@ -71,7 +71,7 @@ resource "aws_iam_role" "lambda_iam_role" {
 }
 
 resource "aws_iam_policy" "lambda_ecs_stop_task_policy" {
-  name        = "${var.deployment_name}-lambda_ecs_stop_task_policy"
+  name        = "${var.project}-${var.venue}-lambda_ecs_stop_task_policy"
   description = "Allows Lambda functions to stop ECS tasks"
 
   policy = jsonencode({
@@ -88,7 +88,7 @@ resource "aws_iam_policy" "lambda_ecs_stop_task_policy" {
 
 
 resource "aws_iam_policy" "lambda_vpc_access_policy" {
-  name        = "${var.installprefix}-lambda_vpc_access_policy"
+  name        = "${var.project}-${var.venue}-lambda_vpc_access_policy"
   description = "Allows Lambda functions to manage ENIs for VPC access"
 
   policy = jsonencode({
