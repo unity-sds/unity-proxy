@@ -1,5 +1,5 @@
 resource "aws_ssm_parameter" "managementproxy_openvirtualhost" {
-  name  = "/unity/${var.project}/${var.venue}/cs/management/proxy/configurations/001-openvirtualhost"
+  name  = "/unity/${var.project}/${var.venue}/cs/management/proxy/configurations/001-openvhost8080"
   type  = "String"
   value = <<-EOT
   <VirtualHost *:8080>
@@ -8,7 +8,7 @@ EOT
 
 resource "aws_ssm_parameter" "managementproxy_closevirtualhost" {
   depends_on = [aws_ssm_parameter.managementproxy_openvirtualhost]
-  name       = "/unity/${var.project}/${var.venue}/cs/management/proxy/configurations/100-closevirtualhost"
+  name       = "/unity/${var.project}/${var.venue}/cs/management/proxy/configurations/100-closevhost8080"
   type       = "String"
   value      = <<-EOT
   </VirtualHost>
