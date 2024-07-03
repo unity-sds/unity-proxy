@@ -142,7 +142,7 @@ resource "aws_ecs_service" "httpd_service" {
 
   load_balancer {
     target_group_arn = aws_lb_target_group.httpd_tg.arn
-    container_name   = "httpd"
+    container_name   = "${var.project}-${var.venue}-httpd-task"
     container_port   = 8080
   }
 
