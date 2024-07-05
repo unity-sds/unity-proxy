@@ -72,7 +72,7 @@ resource "aws_ecs_task_definition" "httpd" {
 
 
   container_definitions = jsonencode([{
-    name = "${var.project}-${var.venue}-httpd-task"
+    name  = "${var.project}-${var.venue}-httpd-task"
     image = "ghcr.io/unity-sds/unity-proxy/httpd-proxy:${var.httpd_proxy_version}"
     environment = [
       {

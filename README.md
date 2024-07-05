@@ -8,11 +8,11 @@ The webservers default port is also 8080 to let it traverse the MCP NACL.
 
 When deployed this terraform code creates an ECS cluster, with a baseline set of SSM parameters that other services can then extend with their own Apache HTTPD configurations. The configurations are pulled down and collated by the container on restart, so reloading of the configuration after changes is handled by triggering a lambda function.
 
-A sample configuration snippet and trigger:
+A sample configuration snippet and trigger (note `0NN-servicename`, the contents of the ssm parameter, and the `depends_on` section of the below should be changed as necessary for each Unity servce's needs):
 ```
-resource "aws_ssm_parameter" "managementproxy_config" {
-  depends_on = [aws_ssm_parameter.managementproxy_closevirtualhost]
-  name       = "/unity/${var.project}/${var.venue}/cs/management/proxy/configurations/010-management"
+resource "aws_ssm_parameter" "serviceproxy_config" {
+  depends_on = []
+  name       = "/unity/${var.project}/${var.venue}/cs/management/proxy/configurations/0NN-servicename"
   type       = "String"
   value      = <<-EOT
 
@@ -30,10 +30,13 @@ resource "aws_ssm_parameter" "managementproxy_config" {
 EOT
 }
 
-resource "aws_lambda_invocation" "demoinvocation2" {
+resource "aws_lambda_invocation" "httpd_lambda_invocation" {
+  depends_on    = aws_ssm_parameter.serviceproxy_config
   function_name = "${var.project}-${var.venue}-httpdproxymanagement"
+  input         = ""
 }
 ```
+(It's recommended to have the `aws_ssm_parameter.serviceproxy_config` depend on the last step of your service orchestration, so as to not set the proxy configuration up until everything has been orchestrated.)
 
 
 The configuration is collated from SSM parameters residing under `/unity/${var.project}/${var.venue}/cs/management/proxy/configurations/`, and assembled like so:
