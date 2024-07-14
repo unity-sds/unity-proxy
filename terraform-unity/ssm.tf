@@ -21,13 +21,9 @@ resource "aws_ssm_parameter" "managementproxy_config" {
   type       = "String"
   value      = <<-EOT
 
-    RewriteEngine on
-    RewriteCond %%{HTTP:Upgrade} websocket [NC]
-    RewriteCond %%{HTTP:Connection} upgrade [NC]
-    RewriteRule /management/(.*) ws://${var.mgmt_dns}/$1 [P,L]
     <Location "/management/">
-        ProxyPass http://${var.mgmt_dns}/
-        ProxyPassReverse http://${var.mgmt_dns}/
+        ProxyPass "http://${var.mgmt_dns}/" upgrade=websocket
+        ProxyPassReverse "http://${var.mgmt_dns}/"
         ProxyPreserveHost On
         FallbackResource /management/index.html
     </Location>

@@ -16,13 +16,9 @@ resource "aws_ssm_parameter" "serviceproxy_config" {
   type       = "String"
   value      = <<-EOT
 
-    RewriteEngine on
-    RewriteCond %%{HTTP:Upgrade} websocket [NC]
-    RewriteCond %%{HTTP:Connection} upgrade [NC]
-    RewriteRule /management/(.*) ws://${var.mgmt_dns}/$1 [P,L]
-    <Location "/management/">
-        ProxyPass http://${var.mgmt_dns}/
-        ProxyPassReverse http://${var.mgmt_dns}/
+    <Location "/service/">
+        ProxyPass "http://${var.endpoint_url}/"
+        ProxyPassReverse "http://${var.endpoint_url}/"
         ProxyPreserveHost On
         FallbackResource /management/index.html
     </Location>
@@ -30,10 +26,10 @@ resource "aws_ssm_parameter" "serviceproxy_config" {
 EOT
 }
 
-resource "aws_lambda_invocation" "httpd_lambda_invocation" {
+resource "aws_lambda_invocation" "unity_proxy_lambda_invocation" {
   depends_on    = aws_ssm_parameter.serviceproxy_config
   function_name = "${var.project}-${var.venue}-httpdproxymanagement"
-  input         = ""
+  input         = "{}"
 }
 ```
 (It's recommended to have the `aws_ssm_parameter.serviceproxy_config` depend on the last step of your service orchestration, so as to not set the proxy configuration up until everything has been orchestrated.)
@@ -43,13 +39,9 @@ The configuration is collated from SSM parameters residing under `/unity/${var.p
 ```
 <VirtualHost *:8080>
 
-RewriteEngine on
-RewriteCond %{HTTP:Upgrade} websocket [NC]
-RewriteCond %{HTTP:Connection} upgrade [NC]
-RewriteRule /management/(.*) ws://internal-unity-mc-alb-hzs9j-1269535099.us-west-2.elb.amazonaws.com:8080/$1 [P,L]
 <Location "/management/">
-    ProxyPass http://internal-unity-mc-alb-hzs9j-1269535099.us-west-2.elb.amazonaws.com:8080/
-    ProxyPassReverse http://internal-unity-mc-alb-hzs9j-1269535099.us-west-2.elb.amazonaws.com:8080/
+    ProxyPass "http://internal-unity-mc-alb-hzs9j-1269535099.us-west-2.elb.amazonaws.com:8080/" upgrade=websocket
+    ProxyPassReverse "http://internal-unity-mc-alb-hzs9j-1269535099.us-west-2.elb.amazonaws.com:8080/"
     ProxyPreserveHost On
     FallbackResource /management/index.html
 </Location>
@@ -62,13 +54,9 @@ Live checking of the "current" configuration may be accomplished with `write_sit
 % DEBUG=yes UNITY_PROJECT=btlunsfo UNITY_VENUE=dev11  python write_site.py
 <VirtualHost *:8080>
 
-RewriteEngine on
-RewriteCond %{HTTP:Upgrade} websocket [NC]
-RewriteCond %{HTTP:Connection} upgrade [NC]
-RewriteRule /management/(.*) ws://internal-unity-mc-alb-hzs9j-1269535099.us-west-2.elb.amazonaws.com:8080/$1 [P,L]
 <Location "/management/">
-    ProxyPass http://internal-unity-mc-alb-hzs9j-1269535099.us-west-2.elb.amazonaws.com:8080/
-    ProxyPassReverse http://internal-unity-mc-alb-hzs9j-1269535099.us-west-2.elb.amazonaws.com:8080/
+    ProxyPass "http://internal-unity-mc-alb-hzs9j-1269535099.us-west-2.elb.amazonaws.com:8080/" upgrade=websocket
+    ProxyPassReverse "http://internal-unity-mc-alb-hzs9j-1269535099.us-west-2.elb.amazonaws.com:8080/"
     ProxyPreserveHost On
     FallbackResource /management/index.html
 </Location>
