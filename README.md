@@ -10,7 +10,7 @@ The webservers default port is also 8080 to let it traverse the MCP NACL.
 
 When deployed this terraform code creates an ECS cluster, with a baseline set of SSM parameters that other services can then extend with their own Apache HTTPD configurations. The configurations are pulled down and collated by the container on restart, so reloading of the configuration after changes is handled by triggering a lambda function.
 
-Below is an example configuration snippet and trigger. It includes some workarounds to accomidate an absolute-pathed web application, which may not be necessary for all applications.
+Below is an example configuration snippet and trigger. It includes some workarounds to accommodate an absolute-pathed web application, which may not be necessary for all applications.
 
 Please note:
 - the parameter name, espeially`0NN-servicename`
