@@ -27,9 +27,9 @@ def fetch_config_ssm(project, venue):
 
 def template_file(parameters, debug):
     # sort the parameters by the ssm param name, and then make a list of just
-    # their values for insertion
+    # their values for insertion (with appended newline because httpd configs are catty)
     param_config = [
-        parm["Value"] for parm in sorted(parameters, key=lambda x: x["Name"])
+        parm["Value"]+"\n" for parm in sorted(parameters, key=lambda x: x["Name"])
     ]
     if debug:  # so we can debug what SSM says it should/will be
         for ln in param_config:
