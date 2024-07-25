@@ -21,11 +21,14 @@ resource "aws_ssm_parameter" "managementproxy_config" {
   type       = "String"
   value      = <<-EOT
 
-    <Location "/management/">
+    <Location "/${var.project}/${var.venue}/management/">
         ProxyPass "http://${var.mgmt_dns}/" upgrade=websocket
         ProxyPassReverse "http://${var.mgmt_dns}/"
         ProxyPreserveHost On
         FallbackResource /management/index.html
+        AddOutputFilterByType INFLATE;SUBSTITUTE;DEFLATE text/html text/javascript
+        Substitute "s|management/ws|${var.project}/${var.venue}/management/ws|n"
+        Substitute "s|\"/([^\"]+)\"(?!:)|\"/${var.project}/${var.venue}/$1\"|q"
     </Location>
 
 EOT

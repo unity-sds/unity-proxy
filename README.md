@@ -24,15 +24,15 @@ resource "aws_ssm_parameter" "serviceproxy_config" {
   type       = "String"
   value       = <<-EOT
 
-    <Location "/${var.urlpath}/">
+    <Location "/${var.project}/${var.venue}/${var.urlpath}/">
       ProxyPassReverse "/"
     </Location>
-    <LocationMatch "^/${var.urlpath}/(.*)$">
+    <LocationMatch "^/${var.project}/${var.venue}/${var.urlpath}/(.*)$">
       ProxyPassMatch "http://${var.service_endpoint}/$1"
       ProxyPreserveHost On
       FallbackResource /management/index.html
       AddOutputFilterByType INFLATE;SUBSTITUTE;DEFLATE text/html
-      Substitute "s|\"/([^\"]*)|\"/${var.urlpath}/$1|q"
+      Substitute "s|\"/([^\"]*)|\"/${var.project}/${var.venue}/${var.urlpath}/$1|q"
     </LocationMatch>
 
 EOT
@@ -58,12 +58,15 @@ The configuration is collated from SSM parameters residing under `/unity/${var.p
 ```
 <VirtualHost *:8080>
 
-<Location "/management/">
-    ProxyPass "http://internal-unity-mc-alb-hzs9j-1269535099.us-west-2.elb.amazonaws.com:8080/" upgrade=websocket
-    ProxyPassReverse "http://internal-unity-mc-alb-hzs9j-1269535099.us-west-2.elb.amazonaws.com:8080/"
-    ProxyPreserveHost On
-    FallbackResource /management/index.html
-</Location>
+<Location "/unity/dev/management/">
+      ProxyPass "http://internal-unity-mc-alb-b0lgg-285622534.us-west-2.elb.amazonaws.com:8080/" upgrade=websocket
+      ProxyPassReverse "http://internal-unity-mc-alb-b0lgg-285622534.us-west-2.elb.amazonaws.com:8080/"
+      ProxyPreserveHost On
+      FallbackResource /management/index.html
+      AddOutputFilterByType INFLATE;SUBSTITUTE;DEFLATE text/html text/javascript
+      Substitute "s|management/ws|unity/dev/management/ws|n"
+      Substitute "s|\"/([^\"]+)\"(?!:)|\"/unity/dev/$1\"|q"
+  </Location>
 
 </VirtualHost>
 ```
@@ -73,12 +76,15 @@ Live checking of the "current" configuration may be accomplished with `write_sit
 % DEBUG=yes UNITY_PROJECT=btlunsfo UNITY_VENUE=dev11  python write_site.py
 <VirtualHost *:8080>
 
-<Location "/management/">
-    ProxyPass "http://internal-unity-mc-alb-hzs9j-1269535099.us-west-2.elb.amazonaws.com:8080/" upgrade=websocket
-    ProxyPassReverse "http://internal-unity-mc-alb-hzs9j-1269535099.us-west-2.elb.amazonaws.com:8080/"
-    ProxyPreserveHost On
-    FallbackResource /management/index.html
-</Location>
+<Location "/unity/dev/management/">
+      ProxyPass "http://internal-unity-mc-alb-b0lgg-285622534.us-west-2.elb.amazonaws.com:8080/" upgrade=websocket
+      ProxyPassReverse "http://internal-unity-mc-alb-b0lgg-285622534.us-west-2.elb.amazonaws.com:8080/"
+      ProxyPreserveHost On
+      FallbackResource /management/index.html
+      AddOutputFilterByType INFLATE;SUBSTITUTE;DEFLATE text/html text/javascript
+      Substitute "s|management/ws|unity/dev/management/ws|n"
+      Substitute "s|\"/([^\"]+)\"(?!:)|\"/unity/dev/$1\"|q"
+  </Location>
 
 </VirtualHost>
 
