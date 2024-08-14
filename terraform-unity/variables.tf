@@ -39,3 +39,15 @@ variable "httpd_proxy_version" {
   type        = string
   default     = "0.16.0"
 }
+
+variable "ssm_account_id"{
+  description = "Name of the SSM paramter for shared service account ID"
+  type = string
+  default = "/unity/shared-services/aws/account"
+}
+
+variable "ssm_region" {
+  type        = string
+  description = "Region"
+  default     = "/unity/shared-services/aws/account/region"
+}
