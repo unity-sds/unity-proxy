@@ -47,14 +47,13 @@ resource "aws_lb_listener" "httpd_listener" {
     Service = "U-CS"
   }
 }
-
-# Unity shared service account ID
-data "aws_ssm_parameter" "shared_service_account_id" {
+# Unity shared serive account ID
+data "aws_ssm_parameter" "shared_service_account_id"{
   name = var.ssm_account_id
 }
 
-# Unity shared service account region
-data "aws_ssm_parameter" "shared_service_region" {
+#Unity shared serive account region
+data "aws_ssm_parameter" "shared_service_region"{
   name = var.ssm_region
 }
 
@@ -62,6 +61,7 @@ data "aws_ssm_parameter" "shared_service_region" {
 data "aws_ssm_parameter" "shared-service-domain" {
   name = "arn:aws:ssm:${data.aws_ssm_parameter.shared_service_region.value}:${data.aws_ssm_parameter.shared_service_account_id.value}:parameter/unity/shared-services/domain"
 }
+
 
 resource "aws_ssm_parameter" "mgmt_endpoint" {
   name  = "/unity/${var.project}/${var.venue}/management/httpd/loadbalancer-url"
@@ -73,5 +73,9 @@ resource "aws_ssm_parameter" "mgmt_endpoint" {
 resource "aws_ssm_parameter" "management_console_url" {
   name  = "/unity/${var.project}/${var.venue}/component/management-console"
   type  = "String"
-  value = "https://www.${data.aws_ssm_parameter.shared-service-domain.value}:4443/${var.project}/${var.venue}/management/ui/landing"
+  value = jsonencode({
+    healthCheckUrl   = "https://www.${data.aws_ssm_parameter.shared-service-domain.value}:4443/${var.project}/${var.venue}/management/api/health_checks"
+    landingPageUrl   = "https://www.${data.aws_ssm_parameter.shared-service-domain.value}:4443/${var.project}/${var.venue}/management/ui/landing"
+    componentName    = "Management Console"
+  })
 }
