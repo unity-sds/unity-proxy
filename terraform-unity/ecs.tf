@@ -160,3 +160,26 @@ resource "aws_ecs_service" "httpd_service" {
     aws_ssm_parameter.managementproxy_config
   ]
 }
+
+# Find the MC's ALB's security group (created before unity-proxy)
+data "aws_security_group" "mc_alb_sg" {
+  tags = {
+    Venue       = var.venue
+    ServiceArea = "cs"
+    Component   = "Unity Management Console"
+    Name        = "Unity Management Console Load Balancer SG"
+    Project     = var.project
+    CreatedBy   = "cs"
+    Env         = var.venue
+    Stack       = "Unity Management Console"
+  }
+}
+
+# Add a new ingress rule to the MC ALB's security group, allowing the ECS instance to connect
+resource "aws_vpc_security_group_ingress_rule" "ecs_mc_alb_ingress_sg_rule" {
+  security_group_id            = data.aws_security_group.mc_alb_sg.id
+  to_port                      = 8080
+  from_port                    = 8080
+  ip_protocol                  = "tcp"
+  referenced_security_group_id = aws_security_group.ecs_sg.id
+}
