@@ -150,3 +150,54 @@ resource "aws_ecs_service" "httpd_service" {
     aws_ssm_parameter.managementproxy_config
   ]
 }
+
+# Find the MC's ALB's security group (created before unity-proxy)
+data "aws_security_group" "mc_alb_sg" {
+  tags = {
+    Venue       = var.venue
+    ServiceArea = "cs"
+    Component   = "Unity Management Console"
+    Name        = "Unity Management Console Load Balancer SG"
+    Project     = var.project
+    CreatedBy   = "cs"
+    Env         = var.venue
+    Stack       = "Unity Management Console"
+  }
+}
+
+data "aws_ssm_parameter" "shared_services_account_id" {
+  name = "/unity/shared-services/aws/account"
+}
+
+data "aws_ssm_parameter" "shared_services_public_subnet1_id" {
+  name = ":parameter/unity/account/network/publicsubnet1"
+}
+
+data "aws_ssm_parameter" "shared_services_public_subnet2_id" {
+  name = ":parameter/unity/account/network/publicsubnet2"
+}
+
+data "aws_subnet" "shared_services_public_subnet1" {
+  id = data.aws_ssm_parameter.shared_services_public_subnet1_id
+}
+
+data "aws_subnet" "shared_services_public_subnet2" {
+  id = data.aws_ssm_parameter.shared_services_public_subnet2_id
+}
+
+resource "aws_vpc_security_group_ingress_rule" "ecs_sg_ingress_rule" {
+  security_group_id = aws_security_group.ecs_sg.id
+  from_port   = 8080
+  to_port     = 8080
+  ip_protocol    = "tcp"
+  cidr_ipv4 = data.aws_subnet.shared_services_public_subnet1.cidr_block
+}
+
+resource "aws_vpc_security_group_egress_rule" "ecs_sg_egress_rule" {
+  security_group_id = aws_security_group.ecs_sg.id
+    from_port   = 0
+    to_port     = 0
+    ip_protocol = -1
+    referenced_security_group_id = data.aws_security_group.mc_alb_sg.id
+    #cidr_ipv4 = "0.0.0.0/0"
+}
