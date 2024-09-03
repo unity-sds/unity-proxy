@@ -1,10 +1,10 @@
 # Create an Application Load Balancer (ALB)
 resource "aws_lb" "httpd_alb" {
   name                       = "${var.project}-${var.venue}-httpd-alb"
-  internal                   = false
+  internal                   = true
   load_balancer_type         = "application"
   security_groups            = [aws_security_group.ecs_alb_sg.id]
-  subnets                    = local.public_subnet_ids
+  subnets                    = local.subnet_ids
   enable_deletion_protection = false
   preserve_host_header       = true
   tags = {
@@ -110,15 +110,15 @@ resource "aws_vpc_security_group_ingress_rule" "ecs_alb_ingress_sg_rule" {
   referenced_security_group_id = aws_security_group.ecs_alb_sg.id
 }
 
-# Add a new ingress rule to the ECS ALB's security group, opening it up to other connections
-#tfsec:ignore:AVD-AWS-0107
-resource "aws_vpc_security_group_ingress_rule" "alb_all_ingress_sg_rule" {
-  security_group_id = aws_security_group.ecs_alb_sg.id
-  to_port           = 8080
-  from_port         = 8080
-  ip_protocol       = "tcp"
-  cidr_ipv4         = "0.0.0.0/0"
-}
+# # Add a new ingress rule to the ECS ALB's security group, opening it up to other connections
+# #tfsec:ignore:AVD-AWS-0107
+# resource "aws_vpc_security_group_ingress_rule" "alb_all_ingress_sg_rule" {
+#   security_group_id = aws_security_group.ecs_alb_sg.id
+#   to_port           = 8080
+#   from_port         = 8080
+#   ip_protocol       = "tcp"
+#   cidr_ipv4         = "0.0.0.0/0"
+# }
 
 # Add a new egress rule to the ECS's security group, allowing ECS to fetch the container images/proxy
 resource "aws_vpc_security_group_egress_rule" "ecs_egress_sg_rule" {
@@ -136,4 +136,28 @@ resource "aws_vpc_security_group_egress_rule" "ecs_alb_egress_sg_rule" {
   from_port         = 0
   ip_protocol       = "tcp"
   cidr_ipv4         = "0.0.0.0/0"
+}
+
+# not great but we're just gonna grab all of the subnets on the other side and allow them
+data "aws_vpc_peering_connection" "pc" {
+  peer_owner_id = data.aws_ssm_parameter.shared_service_account_id.value
+  peer_region   = data.aws_ssm_parameter.shared_service_region.value
+}
+
+resource "aws_vpc_security_group_ingress_rule" "ecs_alb_sg_ingress_rule" {
+  for_each          = toset([for c in data.aws_vpc_peering_connection.pc.peer_cidr_block_set : c.cidr_block])
+  security_group_id = aws_security_group.ecs_alb_sg.id
+  from_port         = 8080
+  to_port           = 8080
+  ip_protocol       = "tcp"
+  cidr_ipv4         = each.key
+}
+
+resource "aws_vpc_security_group_egress_rule" "ecs_sg_egress_rule" {
+  security_group_id            = aws_security_group.ecs_sg.id
+  from_port                    = 0
+  to_port                      = 65535
+  ip_protocol                  = "tcp"
+  referenced_security_group_id = data.aws_security_group.mc_alb_sg.id
+  #cidr_ipv4 = "0.0.0.0/0"
 }
