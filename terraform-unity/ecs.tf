@@ -164,14 +164,10 @@ resource "aws_ecs_service" "httpd_service" {
 # Find the MC's ALB's security group (created before unity-proxy)
 data "aws_security_group" "mc_alb_sg" {
   tags = {
+    Name        = "Unity Management Console Load Balancer SG"
     Venue       = var.venue
     ServiceArea = "cs"
-    Component   = "Unity Management Console"
-    Name        = "Unity Management Console Load Balancer SG"
-    Project     = var.project
-    CreatedBy   = "cs"
-    Env         = var.venue
-    Stack       = "Unity Management Console"
+    Proj        = var.project
   }
 }
 
