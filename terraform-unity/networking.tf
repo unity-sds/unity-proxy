@@ -48,12 +48,12 @@ resource "aws_lb_listener" "httpd_listener" {
   }
 }
 # Unity shared serive account ID
-data "aws_ssm_parameter" "shared_service_account_id"{
+data "aws_ssm_parameter" "shared_service_account_id" {
   name = var.ssm_account_id
 }
 
 #Unity shared serive account region
-data "aws_ssm_parameter" "shared_service_region"{
+data "aws_ssm_parameter" "shared_service_region" {
   name = var.ssm_region
 }
 
@@ -71,11 +71,11 @@ resource "aws_ssm_parameter" "mgmt_endpoint" {
 
 # New SSM parameter for management console
 resource "aws_ssm_parameter" "management_console_url" {
-  name  = "/unity/${var.project}/${var.venue}/component/management-console"
-  type  = "String"
+  name = "/unity/${var.project}/${var.venue}/component/management-console"
+  type = "String"
   value = jsonencode({
-    healthCheckUrl   = "https://www.${data.aws_ssm_parameter.shared-service-domain.value}:4443/${var.project}/${var.venue}/management/api/health_checks"
-    landingPageUrl   = "https://www.${data.aws_ssm_parameter.shared-service-domain.value}:4443/${var.project}/${var.venue}/management/ui/landing"
-    componentName    = "Management Console"
+    healthCheckUrl = "https://www.${data.aws_ssm_parameter.shared-service-domain.value}:4443/${var.project}/${var.venue}/management/api/health_checks"
+    landingPageUrl = "https://www.${data.aws_ssm_parameter.shared-service-domain.value}:4443/${var.project}/${var.venue}/management/ui/landing"
+    componentName  = "Management Console"
   })
 }

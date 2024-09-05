@@ -22,6 +22,7 @@ resource "aws_lambda_function" "httpdlambda" {
     Service = "U-CS"
   }
 }
+
 resource "aws_security_group" "lambda_sg" {
   name        = "${var.project}-${var.venue}-httpd_lambda_sg"
   description = "Security group for httpd lambda service"
