@@ -5,4 +5,4 @@ RUN apt update && apt install -y apache2 libapache2-mod-auth-openidc ca-certific
 
 COPY write_site.py /usr/local/bin/
 
-CMD ["/bin/bash", "-c", "python3 /usr/local/bin/write_site.py && apache2-foreground"]
+CMD ["/bin/bash", "-c", "python3 /usr/local/bin/write_site.py && httpd-foreground"]
