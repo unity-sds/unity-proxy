@@ -32,7 +32,7 @@ jobs:
           zip -r ../lambda.zip lambda.py
 
       - name: Upload packaged Lambda function
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: lambda-package
           path: lambda.zip
