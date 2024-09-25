@@ -22,7 +22,7 @@ resource "aws_ssm_parameter" "managementproxy_config" {
   value      = <<-EOT
 
     <Location "/${var.project}/${var.venue}/management/">
-        ProxyPass "http://${var.mgmt_dns}/" upgrade=websocket retry=5 addressttl=5
+        ProxyPass "http://${var.mgmt_dns}/" upgrade=websocket retry=5 disablereuse=On
         ProxyPassReverse "http://${var.mgmt_dns}/"
         ProxyPreserveHost On
         FallbackResource /management/index.html

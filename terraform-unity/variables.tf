@@ -37,7 +37,7 @@ variable "installprefix" {
 variable "httpd_proxy_version" {
   description = "The version of the httpd proxy container"
   type        = string
-  default     = "0.16.2"
+  default     = "0.16.0"
 }
 
 variable "ssm_account_id" {
