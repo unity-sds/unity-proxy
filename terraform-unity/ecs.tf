@@ -114,7 +114,7 @@ resource "aws_security_group" "ecs_sg" {
 }
 
 resource "aws_security_group" "ecs_alb_sg" {
-  name        = "${var.project}-${var.venue}-ecs_service_sg"
+  name        = "${var.project}-${var.venue}-ecs_alb_sg"
   description = "Security group for ECS service ALB"
   vpc_id      = data.aws_ssm_parameter.vpc_id.value
   tags = {
