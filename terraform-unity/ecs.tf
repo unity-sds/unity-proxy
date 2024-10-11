@@ -108,25 +108,15 @@ resource "aws_security_group" "ecs_sg" {
   name        = "${var.project}-${var.venue}-ecs_service_sg"
   description = "Security group for ECS service"
   vpc_id      = data.aws_ssm_parameter.vpc_id.value
-
-  // Inbound rules
-  // Example: Allow HTTP and HTTPS
-  ingress {
-    from_port   = 8080
-    to_port     = 8080
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+  tags = {
+    Service = "U-CS"
   }
+}
 
-  // Outbound rules
-  // Example: Allow all outbound traffic
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
+resource "aws_security_group" "ecs_alb_sg" {
+  name        = "${var.project}-${var.venue}-ecs_service_sg"
+  description = "Security group for ECS service ALB"
+  vpc_id      = data.aws_ssm_parameter.vpc_id.value
   tags = {
     Service = "U-CS"
   }
@@ -178,4 +168,23 @@ resource "aws_vpc_security_group_ingress_rule" "ecs_mc_alb_ingress_sg_rule" {
   from_port                    = 8080
   ip_protocol                  = "tcp"
   referenced_security_group_id = aws_security_group.ecs_sg.id
+}
+
+# Add a new ingress rule to the ECS's security group, allowing the ECS instance to connect
+resource "aws_vpc_security_group_ingress_rule" "ecs_alb_ingress_sg_rule" {
+  security_group_id            = aws_security_group.ecs_sg.id
+  to_port                      = 8080
+  from_port                    = 8080
+  ip_protocol                  = "tcp"
+  referenced_security_group_id = aws_security_group.ecs_alb_sg.id
+}
+
+# Add a new ingress rule to the ECS ALB's security group, opening it up to other connections
+#tfsec:ignore:AVD-AWS-0107
+resource "aws_vpc_security_group_ingress_rule" "alb_all_ingress_sg_rule" {
+  security_group_id = aws_security_group.ecs_alb_sg.id
+  to_port           = 8080
+  from_port         = 8080
+  ip_protocol       = "tcp"
+  cidr_ipv4         = "0.0.0.0/0"
 }

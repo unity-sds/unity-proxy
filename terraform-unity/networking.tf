@@ -3,7 +3,7 @@ resource "aws_lb" "httpd_alb" {
   name                       = "${var.project}-${var.venue}-httpd-alb"
   internal                   = false
   load_balancer_type         = "application"
-  security_groups            = [aws_security_group.ecs_sg.id]
+  security_groups            = [aws_security_group.ecs_alb_sg.id]
   subnets                    = local.public_subnet_ids
   enable_deletion_protection = false
   tags = {
@@ -34,6 +34,7 @@ resource "aws_lb_target_group" "httpd_tg" {
 }
 
 # Create a Listener for the ALB that forwards requests to the httpd Target Group
+#tfsec:ignore:avd-aws-0054
 resource "aws_lb_listener" "httpd_listener" {
   load_balancer_arn = aws_lb.httpd_alb.arn
   port              = 8080
