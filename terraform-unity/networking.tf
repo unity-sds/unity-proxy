@@ -86,6 +86,7 @@ resource "aws_ssm_parameter" "management_console_url" {
 data "aws_security_group" "mc_alb_sg" {
   tags = {
     Name        = "Unity Management Console Load Balancer SG"
+    Name        = "Unity ${var.project}-${var.venue} Management Console LB SG"
     Venue       = var.venue
     ServiceArea = "cs"
     Proj        = var.project
