@@ -110,16 +110,6 @@ resource "aws_vpc_security_group_ingress_rule" "ecs_alb_ingress_sg_rule" {
   referenced_security_group_id = aws_security_group.ecs_alb_sg.id
 }
 
-# # Add a new ingress rule to the ECS ALB's security group, opening it up to other connections
-# #tfsec:ignore:AVD-AWS-0107
-# resource "aws_vpc_security_group_ingress_rule" "alb_all_ingress_sg_rule" {
-#   security_group_id = aws_security_group.ecs_alb_sg.id
-#   to_port           = 8080
-#   from_port         = 8080
-#   ip_protocol       = "tcp"
-#   cidr_ipv4         = "0.0.0.0/0"
-# }
-
 # Add a new egress rule to the ECS's security group, allowing ECS to fetch the container images/proxy
 resource "aws_vpc_security_group_egress_rule" "ecs_egress_sg_rule" {
   security_group_id = aws_security_group.ecs_sg.id
@@ -159,5 +149,4 @@ resource "aws_vpc_security_group_egress_rule" "ecs_sg_egress_rule" {
   to_port                      = 65535
   ip_protocol                  = "tcp"
   referenced_security_group_id = data.aws_security_group.mc_alb_sg.id
-  #cidr_ipv4 = "0.0.0.0/0"
 }
