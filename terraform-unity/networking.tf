@@ -137,7 +137,7 @@ resource "aws_vpc_security_group_ingress_rule" "ecs_alb_sg_ingress_rule" {
   from_port         = 8080
   to_port           = 8080
   ip_protocol       = "tcp"
-  referenced_security_group_id = data.aws_ssm_parameter.shared-services_security_group.id
+  referenced_security_group_id = data.aws_ssm_parameter.shared-services_security_group.value
 }
 
 resource "aws_vpc_security_group_egress_rule" "ecs_sg_egress_rule" {
