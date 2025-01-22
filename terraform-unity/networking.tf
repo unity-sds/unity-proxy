@@ -128,19 +128,16 @@ resource "aws_vpc_security_group_egress_rule" "ecs_alb_egress_sg_rule" {
   cidr_ipv4         = "0.0.0.0/0"
 }
 
-# not great but we're just gonna grab all of the subnets on the other side and allow them
-data "aws_vpc_peering_connection" "pc" {
-  peer_owner_id = data.aws_ssm_parameter.shared_service_account_id.value
-  peer_region   = data.aws_ssm_parameter.shared_service_region.value
+data "aws_ssm_parameter" "shared-services_security_group" {
+  name = "arn:aws:ssm:${data.aws_ssm_parameter.shared_service_region.value}:${data.aws_ssm_parameter.shared_service_account_id.value}:parameter/unity/shared-services/network/httpd_security_group"
 }
 
 resource "aws_vpc_security_group_ingress_rule" "ecs_alb_sg_ingress_rule" {
-  for_each          = toset([for c in data.aws_vpc_peering_connection.pc.peer_cidr_block_set : c.cidr_block])
   security_group_id = aws_security_group.ecs_alb_sg.id
   from_port         = 8080
   to_port           = 8080
   ip_protocol       = "tcp"
-  cidr_ipv4         = each.key
+  referenced_security_group_id = data.aws_ssm_parameter.shared-services_security_group.id
 }
 
 resource "aws_vpc_security_group_egress_rule" "ecs_sg_egress_rule" {
