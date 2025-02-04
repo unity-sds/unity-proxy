@@ -1,4 +1,4 @@
-FROM ubuntu/apache2
+FROM ubuntu/apache2:2.4-24.10_edge
 
 RUN apt update && apt install -y libapache2-mod-auth-openidc ca-certificates python3-boto3 && a2enmod auth_openidc proxy proxy_http proxy_html proxy_wstunnel ssl substitute rewrite headers && \
     sed -i 's/Listen 80/Listen 8080/' /etc/apache2/ports.conf
