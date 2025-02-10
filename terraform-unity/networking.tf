@@ -1,14 +1,10 @@
 # Create an Application Load Balancer (ALB)
 resource "aws_lb" "httpd_alb" {
-  name = "${var.project}-${var.venue}-httpd-alb"
-  # temporary switch until SPS tests are fixed
-  #internal                   = true
-  internal           = false
-  load_balancer_type = "application"
-  security_groups    = [aws_security_group.ecs_alb_sg.id]
-  # temporary switch until SPS tests are fixed
-  #subnets                    = local.subnet_ids
-  subnets                    = local.public_subnet_ids
+  name                       = "${var.project}-${var.venue}-httpd-alb"
+  internal                   = true
+  load_balancer_type         = "application"
+  security_groups            = [aws_security_group.ecs_alb_sg.id]
+  subnets                    = local.subnet_ids
   enable_deletion_protection = false
   preserve_host_header       = true
   tags = {
@@ -136,23 +132,13 @@ data "aws_ssm_parameter" "shared-services_security_group" {
   name = "arn:aws:ssm:${data.aws_ssm_parameter.shared_service_region.value}:${data.aws_ssm_parameter.shared_service_account_id.value}:parameter/unity/shared-services/network/httpd_security_group"
 }
 
-## lock down ecs alb to just shared services
-#resource "aws_vpc_security_group_ingress_rule" "ecs_alb_sg_ingress_rule" {
-#  security_group_id = aws_security_group.ecs_alb_sg.id
-#  from_port         = 8080
-#  to_port           = 8080
-#  ip_protocol       = "tcp"
-#  referenced_security_group_id = data.aws_ssm_parameter.shared-services_security_group.value
-#}
-
-# temporary open until SPS tests are fixed
-#tfsec:ignore:AVD-AWS-0107
-resource "aws_vpc_security_group_ingress_rule" "ecs_alb_sg_ingress_rule_external" {
-  security_group_id = aws_security_group.ecs_alb_sg.id
-  from_port         = 8080
-  to_port           = 8080
-  ip_protocol       = "tcp"
-  cidr_ipv4         = "0.0.0.0/0"
+# lock down ecs alb to just shared services
+resource "aws_vpc_security_group_ingress_rule" "ecs_alb_sg_ingress_rule" {
+ security_group_id = aws_security_group.ecs_alb_sg.id
+ from_port         = 8080
+ to_port           = 8080
+ ip_protocol       = "tcp"
+ referenced_security_group_id = data.aws_ssm_parameter.shared-services_security_group.value
 }
 
 resource "aws_vpc_security_group_egress_rule" "ecs_sg_egress_rule" {
