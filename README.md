@@ -28,7 +28,7 @@ resource "aws_ssm_parameter" "serviceproxy_config" {
       ProxyPassReverse "/"
     </Location>
     <LocationMatch "^/${var.project}/${var.venue}/${var.urlpath}/(.*)$">
-      ProxyPassMatch "http://${var.service_endpoint}/$1"
+      ProxyPassMatch "http://${var.service_endpoint}/$1" retry=5 addressttl=60
       ProxyPreserveHost On
       FallbackResource /management/index.html
       AddOutputFilterByType INFLATE;SUBSTITUTE;DEFLATE text/html
@@ -59,7 +59,7 @@ The configuration is collated from SSM parameters residing under `/unity/${var.p
 <VirtualHost *:8080>
 
 <Location "/unity/dev/management/">
-      ProxyPass "http://internal-unity-mc-alb-b0lgg-285622534.us-west-2.elb.amazonaws.com:8080/" upgrade=websocket
+      ProxyPass "http://internal-unity-mc-alb-b0lgg-285622534.us-west-2.elb.amazonaws.com:8080/" upgrade=websocket retry=5 addressttl=60
       ProxyPassReverse "http://internal-unity-mc-alb-b0lgg-285622534.us-west-2.elb.amazonaws.com:8080/"
       ProxyPreserveHost On
       FallbackResource /management/index.html
@@ -77,7 +77,7 @@ Live checking of the "current" configuration may be accomplished with `write_sit
 <VirtualHost *:8080>
 
 <Location "/unity/dev/management/">
-      ProxyPass "http://internal-unity-mc-alb-b0lgg-285622534.us-west-2.elb.amazonaws.com:8080/" upgrade=websocket
+      ProxyPass "http://internal-unity-mc-alb-b0lgg-285622534.us-west-2.elb.amazonaws.com:8080/" upgrade=websocket retry=5 addressttl=60
       ProxyPassReverse "http://internal-unity-mc-alb-b0lgg-285622534.us-west-2.elb.amazonaws.com:8080/"
       ProxyPreserveHost On
       FallbackResource /management/index.html
