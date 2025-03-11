@@ -137,13 +137,13 @@ data "aws_ssm_parameter" "shared-services_security_group" {
 }
 
 ## lock down ecs alb to just shared services
-#resource "aws_vpc_security_group_ingress_rule" "ecs_alb_sg_ingress_rule" {
-#  security_group_id = aws_security_group.ecs_alb_sg.id
-#  from_port         = 8080
-#  to_port           = 8080
-#  ip_protocol       = "tcp"
-#  referenced_security_group_id = data.aws_ssm_parameter.shared-services_security_group.value
-#}
+resource "aws_vpc_security_group_ingress_rule" "ecs_alb_sg_ingress_rule" {
+  security_group_id = aws_security_group.ecs_alb_sg.id
+  from_port         = 8080
+  to_port           = 8080
+  ip_protocol       = "tcp"
+  referenced_security_group_id = data.aws_ssm_parameter.shared-services_security_group.value
+}
 
 # temporary open until SPS tests are fixed
 #tfsec:ignore:AVD-AWS-0107
