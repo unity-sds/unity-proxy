@@ -148,11 +148,13 @@ data "aws_ssm_parameter" "shared-services_security_group" {
 # temporary open until SPS tests are fixed
 #tfsec:ignore:AVD-AWS-0107
 resource "aws_vpc_security_group_ingress_rule" "ecs_alb_sg_ingress_rule_external" {
+  for_each          = toset(["128.149.0.0/16", "137.78.0.0/16", "137.79.0.0/16"])
   security_group_id = aws_security_group.ecs_alb_sg.id
+  description       = "SecurityGroup ingress rule for JPL-local addresses"
   from_port         = 8080
   to_port           = 8080
   ip_protocol       = "tcp"
-  cidr_ipv4         = "0.0.0.0/0"
+  cidr_ipv4         = each.key
 }
 
 resource "aws_vpc_security_group_egress_rule" "ecs_sg_egress_rule" {
