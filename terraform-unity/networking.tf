@@ -8,7 +8,7 @@ resource "aws_lb" "httpd_alb" {
   security_groups    = [aws_security_group.ecs_alb_sg.id]
   # temporary switch until SPS tests are fixed
   #subnets                    = local.subnet_ids
-  subnets                    = concat(local.public_subnet_ids, local.subnet_ids)
+  subnets                    = local.subnet_ids
   enable_deletion_protection = false
   preserve_host_header       = true
   tags = {
