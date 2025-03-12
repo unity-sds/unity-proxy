@@ -1,14 +1,24 @@
 # Create an Application Load Balancer (ALB)
-resource "aws_lb" "httpd_alb" {
-  name = "${var.project}-${var.venue}-httpd-alb"
+resource "aws_lb" "httpd_alb_pub" {
+  name                       = "${var.project}-${var.venue}-httpd-alb-pub"
+  internal                   = false
+  load_balancer_type         = "application"
+  security_groups            = [aws_security_group.ecs_alb_sg.id]
+  subnets                    = local.public_subnet_ids
+  enable_deletion_protection = false
+  preserve_host_header       = true
+  tags = {
+    Service = "U-CS"
+  }
+}
+
+resource "aws_lb" "httpd_alb_priv" {
+  name = "${var.project}-${var.venue}-httpd-alb-priv"
   # temporary switch until SPS tests are fixed
-  #internal                   = true
-  internal           = false
-  load_balancer_type = "application"
-  security_groups    = [aws_security_group.ecs_alb_sg.id]
-  # temporary switch until SPS tests are fixed
-  #subnets                    = local.subnet_ids
-  subnets                    = concat(local.public_subnet_ids, local.subnet_ids)
+  internal                   = true
+  load_balancer_type         = "application"
+  security_groups            = [aws_security_group.ecs_alb_sg.id]
+  subnets                    = local.subnet_ids
   enable_deletion_protection = false
   preserve_host_header       = true
   tags = {
@@ -40,8 +50,8 @@ resource "aws_lb_target_group" "httpd_tg" {
 
 # Create a Listener for the ALB that forwards requests to the httpd Target Group
 #tfsec:ignore:avd-aws-0054
-resource "aws_lb_listener" "httpd_listener" {
-  load_balancer_arn = aws_lb.httpd_alb.arn
+resource "aws_lb_listener" "httpd_listener-pub" {
+  load_balancer_arn = aws_lb.httpd_alb_pub
   port              = 8080
   protocol          = "HTTP"
 
@@ -53,6 +63,21 @@ resource "aws_lb_listener" "httpd_listener" {
     Service = "U-CS"
   }
 }
+#tfsec:ignore:avd-aws-0054
+resource "aws_lb_listener" "httpd_listener-priv" {
+  load_balancer_arn = aws_lb.httpd_alb_priv
+  port              = 8080
+  protocol          = "HTTP"
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.httpd_tg.arn
+  }
+  tags = {
+    Service = "U-CS"
+  }
+}
+
 # Unity shared serive account ID
 data "aws_ssm_parameter" "shared_service_account_id" {
   name = var.ssm_account_id
@@ -72,7 +97,13 @@ data "aws_ssm_parameter" "shared-service-domain" {
 resource "aws_ssm_parameter" "mgmt_endpoint" {
   name  = "/unity/${var.project}/${var.venue}/management/httpd/loadbalancer-url"
   type  = "String"
-  value = "${aws_lb_listener.httpd_listener.protocol}://${aws_lb.httpd_alb.dns_name}:${aws_lb_listener.httpd_listener.port}/${var.project}/${var.venue}/management/ui"
+  value = "${aws_lb_listener.httpd_listener-priv.protocol}://${aws_lb.httpd_alb_priv.dns_name}:${aws_lb_listener.httpd_listener-priv.port}/${var.project}/${var.venue}/management/ui"
+}
+
+resource "aws_ssm_parameter" "mgmt_endpoint_pub" {
+  name  = "/unity/${var.project}/${var.venue}/management/httpd/loadbalancer-url-pub"
+  type  = "String"
+  value = "${aws_lb_listener.httpd_listener-pub.protocol}://${aws_lb.httpd_alb_pub.dns_name}:${aws_lb_listener.httpd_listener-pub.port}/${var.project}/${var.venue}/management/ui"
 }
 
 # New SSM parameter for management console
@@ -138,10 +169,10 @@ data "aws_ssm_parameter" "shared-services_security_group" {
 
 ## lock down ecs alb to just shared services
 resource "aws_vpc_security_group_ingress_rule" "ecs_alb_sg_ingress_rule" {
-  security_group_id = aws_security_group.ecs_alb_sg.id
-  from_port         = 8080
-  to_port           = 8080
-  ip_protocol       = "tcp"
+  security_group_id            = aws_security_group.ecs_alb_sg.id
+  from_port                    = 8080
+  to_port                      = 8080
+  ip_protocol                  = "tcp"
   referenced_security_group_id = data.aws_ssm_parameter.shared-services_security_group.value
 }
 

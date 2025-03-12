@@ -146,7 +146,7 @@ resource "aws_ecs_service" "httpd_service" {
     Service = "U-CS"
   }
   depends_on = [
-    aws_lb_listener.httpd_listener,
+    aws_lb_listener.httpd_listener-priv,
     aws_ssm_parameter.managementproxy_config
   ]
 }
