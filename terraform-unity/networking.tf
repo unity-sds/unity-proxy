@@ -51,7 +51,7 @@ resource "aws_lb_target_group" "httpd_tg" {
 # Create a Listener for the ALB that forwards requests to the httpd Target Group
 #tfsec:ignore:avd-aws-0054
 resource "aws_lb_listener" "httpd_listener-pub" {
-  load_balancer_arn = aws_lb.httpd_alb_pub
+  load_balancer_arn = aws_lb.httpd_alb_pub.arn
   port              = 8080
   protocol          = "HTTP"
 
@@ -65,7 +65,7 @@ resource "aws_lb_listener" "httpd_listener-pub" {
 }
 #tfsec:ignore:avd-aws-0054
 resource "aws_lb_listener" "httpd_listener-priv" {
-  load_balancer_arn = aws_lb.httpd_alb_priv
+  load_balancer_arn = aws_lb.httpd_alb_priv.arn
   port              = 8080
   protocol          = "HTTP"
 
