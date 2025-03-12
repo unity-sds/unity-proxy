@@ -8,7 +8,7 @@ resource "aws_lb" "httpd_alb" {
   security_groups    = [aws_security_group.ecs_alb_sg.id]
   # temporary switch until SPS tests are fixed
   #subnets                    = local.subnet_ids
-  subnets                    = local.subnet_ids
+  subnets                    = concat(local.public_subnet_ids, local.subnet_ids)
   enable_deletion_protection = false
   preserve_host_header       = true
   tags = {
@@ -138,10 +138,10 @@ data "aws_ssm_parameter" "shared-services_security_group" {
 
 ## lock down ecs alb to just shared services
 resource "aws_vpc_security_group_ingress_rule" "ecs_alb_sg_ingress_rule" {
-  security_group_id            = aws_security_group.ecs_alb_sg.id
-  from_port                    = 8080
-  to_port                      = 8080
-  ip_protocol                  = "tcp"
+  security_group_id = aws_security_group.ecs_alb_sg.id
+  from_port         = 8080
+  to_port           = 8080
+  ip_protocol       = "tcp"
   referenced_security_group_id = data.aws_ssm_parameter.shared-services_security_group.value
 }
 
