@@ -27,8 +27,28 @@ resource "aws_lb" "httpd_alb_priv" {
 }
 
 # Create a Target Group for httpd
-resource "aws_lb_target_group" "httpd_tg" {
-  name        = "${var.project}-${var.venue}-httpd-tg"
+resource "aws_lb_target_group" "httpd_tg_pub" {
+  name        = "${var.project}-${var.venue}-httpd-tg-pub"
+  port        = 8080
+  protocol    = "HTTP"
+  vpc_id      = data.aws_ssm_parameter.vpc_id.value
+  target_type = "ip"
+
+  health_check {
+    healthy_threshold   = 2
+    unhealthy_threshold = 2
+    timeout             = 5
+    path                = "/"
+    protocol            = "HTTP"
+    matcher             = "200"
+    interval            = 30
+  }
+  tags = {
+    Service = "U-CS"
+  }
+}
+resource "aws_lb_target_group" "httpd_tg_priv" {
+  name        = "${var.project}-${var.venue}-httpd-tg-priv"
   port        = 8080
   protocol    = "HTTP"
   vpc_id      = data.aws_ssm_parameter.vpc_id.value
@@ -57,7 +77,7 @@ resource "aws_lb_listener" "httpd_listener-pub" {
 
   default_action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.httpd_tg.arn
+    target_group_arn = aws_lb_target_group.httpd_tg_pub.arn
   }
   tags = {
     Service = "U-CS"
@@ -71,7 +91,7 @@ resource "aws_lb_listener" "httpd_listener-priv" {
 
   default_action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.httpd_tg.arn
+    target_group_arn = aws_lb_target_group.httpd_tg_priv.arn
   }
   tags = {
     Service = "U-CS"

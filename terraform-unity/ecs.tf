@@ -131,7 +131,13 @@ resource "aws_ecs_service" "httpd_service" {
   desired_count   = 1
 
   load_balancer {
-    target_group_arn = aws_lb_target_group.httpd_tg.arn
+    target_group_arn = aws_lb_target_group.httpd_tg_priv.arn
+    container_name   = "${var.project}-${var.venue}-httpd-task"
+    container_port   = 8080
+  }
+
+  load_balancer {
+    target_group_arn = aws_lb_target_group.httpd_tg_pub.arn
     container_name   = "${var.project}-${var.venue}-httpd-task"
     container_port   = 8080
   }
