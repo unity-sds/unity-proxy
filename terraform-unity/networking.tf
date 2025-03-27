@@ -1,6 +1,6 @@
 # Create an Application Load Balancer (ALB)
 resource "aws_lb" "httpd_alb_pub" {
-  name                       = "${var.project}-${var.venue}-httpd-alb-pub"
+  name                       = "${var.project}-${var.venue}-httpd-pub"
   internal                   = false
   load_balancer_type         = "application"
   security_groups            = [aws_security_group.ecs_alb_sg.id]
@@ -13,7 +13,7 @@ resource "aws_lb" "httpd_alb_pub" {
 }
 
 resource "aws_lb" "httpd_alb_priv" {
-  name = "${var.project}-${var.venue}-httpd-alb-priv"
+  name = "${var.project}-${var.venue}-httpd-alb"
   # temporary switch until SPS tests are fixed
   internal                   = true
   load_balancer_type         = "application"
